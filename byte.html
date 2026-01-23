@@ -1,0 +1,518 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>GS2 Bytecode Converter</title>
+  <link rel="icon" type="image/x-icon" href="favicon.ico">
+  <link rel="stylesheet" href="css/shared.css?v=6">
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    body{font-family:'Consolas','Monaco','Courier New',monospace;background:transparent;color:#f8f8f2;display:flex;flex-direction:column;height:100vh;overflow:hidden}
+    button{padding:10px 20px;background:#bd93f9;color:#282a36;border:none;border-radius:4px;cursor:pointer;font-weight:600;font-size:13px;transition:all 0.2s}
+    button:hover{background:#ff79c6;transform:translateY(-1px)}
+    button:active{transform:translateY(0)}
+    button:disabled{background:#44475a;color:#6272a4;cursor:not-allowed;transform:none}
+    .btn-save{background:#50fa7b;color:#282a36}
+    .btn-save:hover{background:#5af78e}
+    .error{color:#ff5555}
+    .info{color:#8be9fd;padding:10px 15px;background:#1e1f29;border-top:1px solid #44475a;font-size:12px}
+  </style>
+</head>
+<body>
+  <div class="contain-bg2"></div>
+  <div class="modal-overlay byte-modal-overlay" id="saveModal">
+    <div class="modal-dialog byte-modal-dialog">
+      <div class="modal-header byte-modal-header">Save Bytecode</div>
+      <input type="text" class="modal-input byte-modal-input" id="filenameInput" placeholder="Enter filename..." value="output">
+      <div class="modal-buttons byte-modal-buttons">
+        <button class="modal-btn byte-modal-btn byte-modal-btn-secondary" id="cancelBtn">Cancel</button>
+        <button class="modal-btn byte-modal-btn byte-modal-btn-primary" id="confirmSaveBtn">Save</button>
+      </div>
+    </div>
+  </div>
+  <div class="byte-container">
+    <div style="position:absolute;top:20px;left:20px;z-index:1000">
+      <a href="/" style="font-size:16px;color:#40ff40;cursor:pointer;text-decoration:none"><i className="fas fa-arrow-left"></i> Back</a>
+    </div>
+    <div class="byte-main" style="padding-top:60px">
+      <div class="byte-panel">
+        <div class="byte-panel-header">GS2 Source Code</div>
+        <div class="byte-panel-body" style="padding:0;">
+          <div id="sourceEditor" class="byte-editor-container"></div>
+        </div>
+      </div>
+      <div class="byte-panel">
+        <div class="byte-panel-header">
+          <span>Bytecode Output</span>
+          <button class="byte-copy-btn" id="copyBtn" title="Copy to clipboard">📋</button>
+        </div>
+        <div class="byte-panel-body" style="padding:0;">
+          <div id="outputEditor" class="byte-editor-container"></div>
+        </div>
+      </div>
+    </div>
+    <div class="byte-controls">
+      <div class="byte-mode-toggle">
+        <input type="checkbox" id="decompileMode">
+        <label for="decompileMode">Decompile</label>
+      </div>
+      <button id="convertBtn">Convert to Bytecode</button>
+      <button id="saveBtn" class="btn-save">Save Bytecode</button>
+      <button id="clearBtn">Clear</button>
+    </div>
+    <div class="info" id="statusInfo">Ready</div>
+  </div>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/monaco-editor/0.45.0/min/vs/loader.min.js"></script>
+  <script src="js/gs2.js" onload="window.gs2Loaded = true;" onerror="console.error('Failed to load gs2.js');"></script>
+  <script type="module">
+    import init, { decompile_bytecode } from './js/gbf.js';
+    window.gbfWasmInit = init;
+    window.gbfDecompileBytecode = decompile_bytecode;
+  </script>
+  <script>
+    (function(){
+      const originalError = console.error;
+      const originalWarn = console.warn;
+      console.error = function(...args) {
+        if (typeof args[0] === 'string' && (args[0].includes('Source map error') || args[0].includes('URL constructor'))) return;
+        if (typeof args[0] === 'string' && args[0].includes('cloudflareinsights')) return;
+        originalError.apply(console, args);
+      };
+      console.warn = function(...args) {
+        if (typeof args[0] === 'string' && (args[0].includes('Source map error') || args[0].includes('URL constructor'))) return;
+        if (typeof args[0] === 'string' && args[0].includes('cloudflareinsights')) return;
+        originalWarn.apply(console, args);
+      };
+    })();
+    let sourceEditor;
+    let outputEditor;
+    const convertBtn = document.getElementById('convertBtn');
+    const saveBtn = document.getElementById('saveBtn');
+    const clearBtn = document.getElementById('clearBtn');
+    const statusInfo = document.getElementById('statusInfo');
+    const saveModal = document.getElementById('saveModal');
+    const filenameInput = document.getElementById('filenameInput');
+    const confirmSaveBtn = document.getElementById('confirmSaveBtn');
+    const cancelBtn = document.getElementById('cancelBtn');
+    const copyBtn = document.getElementById('copyBtn');
+    const decompileMode = document.getElementById('decompileMode');
+    const sourcePanelHeader = document.querySelector('.panel:first-child .panel-header');
+    const outputPanelHeader = document.querySelector('.panel:last-child .panel-header');
+    let currentBytecode = '';
+    let isDecompileMode = false;
+
+    require.config({ paths: { 'vs': 'https://cdnjs.cloudflare.com/ajax/libs/monaco-editor/0.45.0/min/vs' }});
+    require(['vs/editor/editor.main'], function() {
+      monaco.languages.register({ id: 'gscript' });
+
+      monaco.languages.setMonarchTokensProvider('gscript', {
+        keywords: [
+          'break', 'case', 'continue', 'default', 'do', 'else', 'elseif', 'for', 'if',
+          'in', 'return', 'switch', 'while', 'with', 'join', 'leave', 'public', 'private',
+          'const', 'enum', 'function', 'new', 'datablock', 'true', 'false', 'nil', 'null',
+          'NULL', 'pi', 'timevar2'
+        ],
+
+        typeKeywords: [
+          'join', 'leave'
+        ],
+
+        storageModifiers: [
+          'public', 'private', 'const', 'enum', 'function'
+        ],
+
+        controlKeywords: [
+          'break', 'case', 'continue', 'default', 'do', 'else', 'elseif', 'for', 'if',
+          'in', 'return', 'switch', 'while', 'with'
+        ],
+
+        literals: [
+          'true', 'false', 'nil', 'null', 'NULL', 'pi', 'timevar2'
+        ],
+
+        builtinVariables: [
+          'this', 'thiso', 'temp', 'server', 'serverr', 'client', 'clientr', 'player', 'name'
+        ],
+
+        sqlKeywords: [
+          'SELECT', 'INSERT', 'UPDATE', 'DELETE', 'CREATE', 'TABLE', 'FROM', 'WHERE',
+          'VALUES', 'SET', 'INTO', 'AND', 'OR', 'NOT', 'NULL', 'IS', 'AS', 'ON', 'JOIN',
+          'LEFT', 'RIGHT', 'INNER', 'OUTER', 'GROUP', 'BY', 'ORDER', 'LIMIT', 'OFFSET',
+          'DISTINCT', 'COUNT', 'AVG', 'SUM', 'MIN', 'MAX', 'PRIMARY', 'KEY', 'DEFAULT', 'INT', 'TEXT'
+        ],
+
+        operators: [
+          '-', '~', '^', '@', '/', '%', '|', '=', '+', '*', '!', '?', '&', '<', '>'
+        ],
+
+        symbols: /[~\^@\/%\|=\+\*!?&<>\-\[\]\{\}\(\)\;:,.]+/,
+
+        tokenizer: {
+          root: [
+            [/\s*#.*$/, 'comment'],
+            [/\/\/.*$/, 'comment'],
+            [/\/\*/, 'comment', '@comment'],
+            [/"([^"\\]|\\.)*$/, 'string.invalid'],
+            [/"/, 'string', '@string'],
+            [/\$[a-zA-Z_][a-zA-Z0-9_]*(?:::[a-zA-Z_][a-zA-Z0-9_]*)*/, 'variable.predefined'],
+            [/\b[0-9]+/, 'number'],
+            [/\b0[xX][0-9a-fA-F]+\b/, 'number.hex'],
+            [/\b(break|case|continue|default|do|else|elseif|for|if|in|return|switch|while|with)\b/, 'keyword'],
+            [/\b(join|leave)\b/, 'type'],
+            [/\b(public|private|const|enum|function)\b/, 'storage.modifier'],
+            [/\b(new|datablock)\b/, 'keyword.other'],
+            [/\b(true|false|nil|null|NULL|pi|timevar2)\b/, 'constant.language'],
+            [/\b(this|thiso|temp|server|serverr|client|clientr|player|name)\b/, 'variable.language'],
+            [/[a-zA-Z_][a-zA-Z0-9_]*(?=\()/, 'entity.name.function'],
+            [/[a-zA-Z_][a-zA-Z0-9_]*/, 'identifier'],
+          ],
+
+          comment: [
+            [/[^\/*]+/, 'comment'],
+            [/\/\*/, 'comment', '@push'],
+            ['\\*/', 'comment', '@pop'],
+            [/[\/*]/, 'comment'],
+          ],
+
+          string: [
+            [/\b(SELECT|INSERT|UPDATE|DELETE|CREATE|TABLE|FROM|WHERE|VALUES|SET|INTO|AND|OR|NOT|NULL|IS|AS|ON|JOIN|LEFT|RIGHT|INNER|OUTER|GROUP|BY|ORDER|LIMIT|OFFSET|DISTINCT|COUNT|AVG|SUM|MIN|MAX|PRIMARY|KEY|DEFAULT|INT|TEXT)\b/, 'keyword.other.sql'],
+            [/[^\\"]+/, 'string'],
+            [/"/, 'string', '@pop'],
+          ],
+        }
+      });
+
+      monaco.editor.defineTheme('dracula', {
+        base: 'vs-dark',
+        inherit: true,
+        rules: [
+          { token: 'comment', foreground: '6272a4', fontStyle: 'italic' },
+          { token: 'keyword', foreground: 'ff79c6' },
+          { token: 'keyword.other', foreground: 'ff79c6' },
+          { token: 'storage.modifier', foreground: 'ff79c6' },
+          { token: 'type', foreground: 'ff79c6' },
+          { token: 'string', foreground: 'f1fa8c' },
+          { token: 'string.sql', foreground: 'f1fa8c' },
+          { token: 'keyword.other.sql', foreground: 'ff79c6', fontStyle: 'italic' },
+          { token: 'number', foreground: 'bd93f9' },
+          { token: 'number.hex', foreground: 'bd93f9' },
+          { token: 'constant.language', foreground: 'bd93f9' },
+          { token: 'variable.predefined', foreground: 'ffb86c' },
+          { token: 'variable.language', foreground: 'ffb86c' },
+          { token: 'entity.name.function', foreground: '50fa7b' },
+          { token: 'identifier', foreground: 'f8f8f2' },
+        ],
+        colors: {
+          'editor.background': '#282a36',
+          'editor.foreground': '#f8f8f2',
+          'editorLineNumber.foreground': '#6272a4',
+          'editorLineNumber.activeForeground': '#f8f8f2',
+          'editor.selectionBackground': '#44475a',
+          'editor.inactiveSelectionBackground': '#282a36',
+          'editorCursor.foreground': '#f8f8f2',
+          'editor.lineHighlightBorder': '#282a36',
+          'editor.lineHighlightBackground': '#282a36',
+        }
+      });
+
+      sourceEditor = monaco.editor.create(document.getElementById('sourceEditor'), {
+        value: '',
+        language: 'gscript',
+        theme: 'dracula',
+        automaticLayout: true,
+        fontSize: 13,
+        fontFamily: "'Consolas', 'Monaco', 'Courier New', monospace",
+        lineHeight: 21,
+        minimap: { enabled: false },
+        scrollBeyondLastLine: false,
+        wordWrap: 'off',
+        tabSize: 4,
+        renderLineHighlight: 'none',
+        overviewRulerLanes: 0,
+        hideMarkersInOverviewRuler: true,
+        scrollbar: {
+          useShadows: false,
+        },
+      });
+
+      outputEditor = monaco.editor.create(document.getElementById('outputEditor'), {
+        value: '',
+        language: 'gscript',
+        theme: 'dracula',
+        automaticLayout: true,
+        fontSize: 13,
+        fontFamily: "'Consolas', 'Monaco', 'Courier New', monospace",
+        lineHeight: 21,
+        minimap: { enabled: false },
+        scrollBeyondLastLine: false,
+        wordWrap: 'on',
+        tabSize: 4,
+        renderLineHighlight: 'none',
+        overviewRulerLanes: 0,
+        hideMarkersInOverviewRuler: true,
+        readOnly: true,
+        stopRenderingLineAfter: -1,
+        scrollbar: {
+          useShadows: false,
+        },
+      });
+
+      window.dispatchEvent(new Event('monaco-ready'));
+    });
+    let gbfWasmLoaded = false;
+    async function loadGbfWasm() {
+      if (gbfWasmLoaded) return;
+      try {
+        await window.gbfWasmInit('js/gbf.wasm');
+        gbfWasmLoaded = true;
+      } catch (e) {
+        console.error('Failed to load GBF WASM:', e);
+        throw e;
+      }
+    }
+    function hexToUint8Array(hex) {
+      hex = hex.replace(/\s+/g, '');
+      const bytes = new Uint8Array(hex.length / 2);
+      for (let i = 0; i < bytes.length; i++) {
+        bytes[i] = parseInt(hex.substr(i * 2, 2), 16);
+      }
+      return bytes;
+    }
+    function cleanupDecompiled(code) {
+      let lines = code.split('\n');
+      let result = [];
+      for (let i = 0; i < lines.length; i++) {
+        let line = lines[i];
+        if (line.trim().match(/^lit\s*=\s*0;?$/)) {
+          continue;
+        }
+        if (line.trim().match(/^return\s+lit;?$/)) {
+          continue;
+        }
+        result.push(line);
+      }
+      code = result.join('\n');
+      code = code.replace(/lit\s*=\s*"([^"]+)"\s*;\s*fn_call\s*=\s*echo\s*\(lit\)\s*;\s*lit\s*=\s*0;\s*return\s+lit;/g, 'echo("$1");');
+      code = code.replace(/lit\s*=\s*"([^"]+)"\s*;\s*fn_call\s*=\s*echo\s*\(lit\)\s*;/g, 'echo("$1");');
+      code = code.replace(/lit\s*=\s*"([^"]+)"\s*;\s*fn_call\s*=\s*([^(]+)\.([^(]+)\(lit\)\s*;/g, '$2.$3("$1");');
+      code = code.replace(/lit\s*=\s*true\s*;\s*fn_call\s*=\s*([^\.]+)\.([^(]+)\(lit\)\s*;/g, '$1.$2(true);');
+      code = code.replace(/lit\s*=\s*false\s*;\s*fn_call\s*=\s*([^\.]+)\.([^(]+)\(lit\)\s*;/g, '$1.$2(false);');
+      code = code.replace(/lit\s*=\s*true\s*;\s*fn_call\s*=\s*([^(]+)\(lit\)\s*;/g, '$1(true);');
+      code = code.replace(/lit\s*=\s*false\s*;\s*fn_call\s*=\s*([^(]+)\(lit\)\s*;/g, '$1(false);');
+      code = code.replace(/lit\s*=\s*false\s*;\s*([^=]+\.visible\s*=\s*)lit\s*;/g, '$1false;');
+      code = code.replace(/lit\s*=\s*true\s*;\s*([^=]+\.visible\s*=\s*)lit\s*;/g, '$1true;');
+      code = code.replace(/fn_call\s*=\s*/g, '');
+      code = code.replace(/function\s+(public|private)\.(\w+)/g, '$1 function $2');
+      code = code.replace(/}\s*;/g, '};');
+      code = code.replace(/\n\s*\n\s*\n/g, '\n\n');
+      return code.trim();
+    }
+    function updateStatus(msg, isError = false) {
+      statusInfo.textContent = msg;
+      statusInfo.className = isError ? 'info error' : 'info';
+    }
+    function updateUIForMode() {
+      isDecompileMode = decompileMode.checked;
+      if (isDecompileMode) {
+        convertBtn.textContent = 'Decompile to GS2';
+        saveBtn.textContent = 'Save GS2 Code';
+        sourcePanelHeader.childNodes[0].textContent = 'Bytecode Input';
+        outputPanelHeader.querySelector('span').textContent = 'GS2 Output (WIP)';
+        statusInfo.textContent = 'Switched to decompile';
+        if (sourceEditor) sourceEditor.updateOptions({ wordWrap: 'on' });
+      } else {
+        convertBtn.textContent = 'Convert to Bytecode';
+        saveBtn.textContent = 'Save Bytecode';
+        sourcePanelHeader.childNodes[0].textContent = 'GS2 Source Code';
+        outputPanelHeader.querySelector('span').textContent = 'Bytecode Output';
+        statusInfo.textContent = 'Switched to compile';
+        if (sourceEditor) sourceEditor.updateOptions({ wordWrap: 'off' });
+      }
+    }
+    let compilerInstance = null;
+    async function getCompiler() {
+      if (compilerInstance) return compilerInstance;
+      if (typeof window.GS2Compiler === 'function') {
+        compilerInstance = await window.GS2Compiler();
+        return compilerInstance;
+      }
+      return null;
+    }
+    function downloadFile(content, filename) {
+      const blob = new Blob([content], { type: 'text/plain' });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      const ext = isDecompileMode ? '.gs2' : '.txt';
+      a.download = filename.endsWith('.gs2') || filename.endsWith('.txt') ? filename : filename + ext;
+      document.body.appendChild(a);
+      a.click();
+      document.body.removeChild(a);
+      URL.revokeObjectURL(url);
+    }
+    function showSaveDialog() {
+      if (!currentBytecode) {
+        updateStatus(isDecompileMode ? 'No GS2 code to save' : 'No bytecode to save', true);
+        return;
+      }
+      filenameInput.value = 'output';
+      saveModal.classList.add('show');
+      filenameInput.focus();
+      filenameInput.select();
+    }
+    function hideSaveDialog() {
+      saveModal.classList.remove('show');
+    }
+    function performSave() {
+      const filename = filenameInput.value.trim() || 'output';
+      downloadFile(currentBytecode, filename);
+      const ext = isDecompileMode ? '.gs2' : '.txt';
+      updateStatus(`Saved: ${filename.endsWith('.gs2') || filename.endsWith('.txt') ? filename : filename + ext}`);
+      hideSaveDialog();
+    }
+    function flipInputOutput() {
+      const sourceValue = sourceEditor.getValue();
+      const outputValue = outputEditor.getValue();
+      sourceEditor.setValue(outputValue);
+      outputEditor.setValue(sourceValue);
+    }
+    decompileMode.addEventListener('change', () => {
+      updateUIForMode();
+      if (currentBytecode) flipInputOutput();
+    });
+    const waitForGS2 = () => new Promise(r => { const check = () => window.GS2Compiler ? r() : setTimeout(check, 100); check(); });
+    convertBtn.addEventListener('click', async () => {
+      const code = sourceEditor.getValue().trim();
+      console.log('Convert clicked, isDecompileMode:', isDecompileMode, 'decompileMode.checked:', decompileMode.checked);
+      if (!code) {
+        updateStatus(isDecompileMode ? 'Please enter bytecode to decompile' : 'Please enter GS2 code to convert', true);
+        return;
+      }
+      if (isDecompileMode) {
+        updateStatus('Decompiling...');
+        convertBtn.disabled = true;
+        try {
+          await loadGbfWasm();
+          const bytecode = hexToUint8Array(code);
+          let decompiled = window.gbfDecompileBytecode(bytecode);
+          decompiled = cleanupDecompiled(decompiled);
+          currentBytecode = decompiled;
+          outputEditor.setValue(decompiled);
+          updateStatus('Decompilation successful!');
+        } catch (error) {
+          currentBytecode = '';
+          const errorMsg = error.message || String(error);
+          outputEditor.setValue(`Error: ${errorMsg}`);
+        } finally {
+          convertBtn.disabled = false;
+        }
+      } else {
+        updateStatus('Compiling...');
+        convertBtn.disabled = true;
+        try {
+          await waitForGS2();
+          const compiler = await getCompiler();
+          if (!compiler) {
+            updateStatus('Error: Could not load compiler. Check console.', true);
+            convertBtn.disabled = false;
+            return;
+          }
+          const ctx = new compiler.GS2Context();
+          const response = ctx.compile(code);
+          if (!response.success) {
+            const errVec = response.getErrors();
+            const errors = [];
+            for (let i = 0; i < errVec.size(); i++) errors.push(errVec.get(i));
+            const errorMsg = errors.join('\n');
+            currentBytecode = '';
+            outputEditor.setValue(`Compilation failed:\n${errorMsg}`);
+          } else {
+            const bytecode = response.getBytecode();
+            const hex = Array.from(bytecode).map(b => b.toString(16).padStart(2, '0')).join(' ');
+            currentBytecode = hex;
+            outputEditor.setValue(hex);
+            updateStatus('Compilation successful! (' + bytecode.length + ' bytes)');
+          }
+        } catch (error) {
+          currentBytecode = '';
+          const errorMsg = error.message || String(error);
+          outputEditor.setValue(`Error: ${errorMsg}\n\nStack:\n${error.stack || 'No stack trace'}`);
+        } finally {
+          convertBtn.disabled = false;
+        }
+      }
+    });
+    saveBtn.addEventListener('click', showSaveDialog);
+    confirmSaveBtn.addEventListener('click', performSave);
+    cancelBtn.addEventListener('click', hideSaveDialog);
+    filenameInput.addEventListener('keydown', (e) => {
+      if (e.key === 'Enter') performSave();
+      if (e.key === 'Escape') hideSaveDialog();
+    });
+    saveModal.addEventListener('click', (e) => {
+      if (e.target === saveModal) hideSaveDialog();
+    });
+    document.addEventListener('keydown', (e) => {
+      if ((e.ctrlKey || e.metaKey) && e.key === 's') {
+        e.preventDefault();
+        showSaveDialog();
+      }
+    });
+    window.addEventListener('monaco-ready', async () => {
+      updateUIForMode();
+      updateStatus('Loading GS2 compiler...');
+      clearBtn.addEventListener('click', () => {
+        sourceEditor.setValue('');
+        outputEditor.setValue(isDecompileMode ? 'GS2 code will appear here... (WIP)' : 'Bytecode will appear here...');
+        currentBytecode = '';
+        updateStatus('Cleared');
+      });
+      sourceEditor.onDidChangeModelContent(() => {
+        if (sourceEditor.getValue().trim()) convertBtn.disabled = false;
+      });
+      copyBtn.addEventListener('click', async () => {
+        const textToCopy = outputEditor.getValue();
+        if (!textToCopy || textToCopy.includes('will appear here')) {
+          updateStatus(isDecompileMode ? 'No GS2 code to copy' : 'No bytecode to copy', true);
+          return;
+        }
+        try {
+          await navigator.clipboard.writeText(textToCopy);
+          updateStatus('Copied to clipboard!');
+          copyBtn.textContent = '✓';
+          setTimeout(() => { copyBtn.textContent = '📋'; }, 2000);
+        } catch (err) {
+          const textArea = document.createElement('textarea');
+          textArea.value = textToCopy;
+          textArea.style.position = 'fixed';
+          textArea.style.left = '-999999px';
+          document.body.appendChild(textArea);
+          textArea.select();
+          try {
+            document.execCommand('copy');
+            updateStatus('Copied to clipboard!');
+            copyBtn.textContent = '✓';
+            setTimeout(() => { copyBtn.textContent = '📋'; }, 2000);
+          } catch (e) {
+            updateStatus('Failed to copy', true);
+          }
+          document.body.removeChild(textArea);
+        }
+      });
+      await waitForGS2();
+      try {
+        const compiler = await getCompiler();
+        if (compiler) {
+          const mode = isDecompileMode ? 'decompiler' : 'compiler';
+          updateStatus('Ready - GS2 ' + mode + ' loaded');
+        } else {
+          updateStatus('Warning: Could not load compiler. Check console.', true);
+        }
+      } catch (e) {
+        updateStatus('Error loading compiler: ' + e.message, true);
+      }
+    });
+  </script>
+</body>
+</html>
