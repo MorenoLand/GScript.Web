@@ -78,6 +78,13 @@
     table { border-collapse: separate; border-spacing: 0; background-color: rgba(0, 0, 0, 0.5); border-radius: 8px; overflow: hidden; table-layout: auto; margin: 0 auto; }
     th, td { padding: 12px 10px; text-align: left; }
   }
+  @media (max-width: 768px) {
+    th:nth-child(4), td:nth-child(4), th:nth-child(5), td:nth-child(5), th:nth-child(6), td:nth-child(6), th:nth-child(7), td:nth-child(7) { display: none; }
+    .table-wrapper { max-width: 100%; overflow-x: auto; }
+    th, td { padding: 8px 6px; font-size: 0.9rem; }
+    table { table-layout: auto; }
+    th, td { width: auto !important; }
+  }
 </style>
 </head>
 <body>
