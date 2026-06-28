@@ -1,0 +1,451 @@
+import { useRef, useState, type FormEvent } from 'react'
+import { Plus, Trash2, FileUp, ImageIcon, X, GripVertical } from 'lucide-react'
+import { Button } from '@/components/ui/button'
+import { Input } from '@/components/ui/input'
+import { Textarea } from '@/components/ui/textarea'
+import { Label } from '@/components/ui/label'
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '@/components/ui/select'
+import { useAuth } from '@/hooks/useAuth'
+import { LANGUAGES } from '@/lib/constants'
+import { fileToBase64, imageDataUrl, humanSize } from '@/lib/format'
+import type {
+  SnippetDetail,
+  SnippetFileInput,
+  SnippetImageInput,
+  SnippetPayload,
+} from '@/lib/types'
+
+const MAX_IMAGES = 8
+const MAX_IMAGE_BYTES = 3_000_000
+
+interface SnippetFormProps {
+  initial?: SnippetDetail
+  submitting?: boolean
+  submitLabel: string
+  onSubmit: (payload: SnippetPayload) => void | Promise<void>
+}
+
+interface FileRow extends SnippetFileInput {
+  uid: string
+}
+
+let uidCounter = 0
+function nextUid() {
+  uidCounter += 1
+  return `f${uidCounter}`
+}
+
+function defaultAuthor() {
+  // SSR-safe placeholder; real default applied in component from useAuth.
+  return ''
+}
+
+export function SnippetForm({ initial, submitting, submitLabel, onSubmit }: SnippetFormProps) {
+  const { user } = useAuth()
+  const [title, setTitle] = useState(initial?.title ?? '')
+  const [description, setDescription] = useState(initial?.description ?? '')
+  const [author, setAuthor] = useState(
+    initial?.author ?? user?.nickname ?? user?.username ?? defaultAuthor(),
+  )
+
+  const [files, setFiles] = useState<FileRow[]>(
+    initial
+      ? initial.files
+          .slice()
+          .sort((a, b) => a.position - b.position)
+          .map((f) => ({
+            uid: nextUid(),
+            filename: f.filename,
+            language: f.language ?? 'gs2',
+            content: f.content,
+          }))
+      : [
+          {
+            uid: nextUid(),
+            filename: 'main.gs2',
+            language: 'gs2',
+            content: '// your GS2 code here\n',
+          },
+        ],
+  )
+
+  const [images, setImages] = useState<SnippetImageInput[]>(
+    initial
+      ? initial.images
+          .slice()
+          .sort((a, b) => a.position - b.position)
+          .map((img) => ({
+            filename: img.filename,
+            mimeType: img.mimeType,
+            data: img.data,
+          }))
+      : [],
+  )
+
+  const [error, setError] = useState<string | null>(null)
+  const fileInputRef = useRef<HTMLInputElement>(null)
+  const imageInputRef = useRef<HTMLInputElement>(null)
+
+  // ---- file rows ----
+  function addFile() {
+    setFiles((prev) => [
+      ...prev,
+      {
+        uid: nextUid(),
+        filename: `untitled-${prev.length + 1}.gs2`,
+        language: 'gs2',
+        content: '',
+      },
+    ])
+  }
+
+  function removeFile(uid: string) {
+    setFiles((prev) => prev.filter((f) => f.uid !== uid))
+  }
+
+  function patchFile(uid: string, patch: Partial<FileRow>) {
+    setFiles((prev) => prev.map((f) => (f.uid === uid ? { ...f, ...patch } : f)))
+  }
+
+  function moveFile(uid: string, dir: -1 | 1) {
+    setFiles((prev) => {
+      const i = prev.findIndex((f) => f.uid === uid)
+      const j = i + dir
+      if (i < 0 || j < 0 || j >= prev.length) return prev
+      const copy = [...prev]
+      ;[copy[i], copy[j]] = [copy[j], copy[i]]
+      return copy
+    })
+  }
+
+  async function importFiles(list: FileList | null) {
+    if (!list || !list.length) return
+    const rows: FileRow[] = []
+    for (const file of Array.from(list)) {
+      const text = await file.text()
+      rows.push({
+        uid: nextUid(),
+        filename: file.name,
+        language: guessLanguage(file.name),
+        content: text,
+      })
+    }
+    setFiles((prev) => [...prev, ...rows])
+    if (fileInputRef.current) fileInputRef.current.value = ''
+  }
+
+  // ---- images ----
+  async function addImages(list: FileList | null) {
+    if (!list || !list.length) return
+    setError(null)
+    const incoming = Array.from(list)
+    const accepted: SnippetImageInput[] = []
+    for (const file of incoming) {
+      if (!file.type.startsWith('image/')) {
+        setError(`${file.name} is not an image.`)
+        continue
+      }
+      if (file.size > MAX_IMAGE_BYTES) {
+        setError(`${file.name} is too large (max ${humanSize(MAX_IMAGE_BYTES)}).`)
+        continue
+      }
+      const data = await fileToBase64(file)
+      accepted.push({ filename: file.name, mimeType: file.type, data })
+    }
+    if (accepted.length) {
+      setImages((prev) => {
+        const merged = [...prev, ...accepted]
+        if (merged.length > MAX_IMAGES) {
+          setError(`Max ${MAX_IMAGES} images — kept the first ${MAX_IMAGES}.`)
+          return merged.slice(0, MAX_IMAGES)
+        }
+        return merged
+      })
+    }
+    if (imageInputRef.current) imageInputRef.current.value = ''
+  }
+
+  function removeImage(index: number) {
+    setImages((prev) => prev.filter((_, i) => i !== index))
+  }
+
+  // ---- submit ----
+  function handleSubmit(e: FormEvent) {
+    e.preventDefault()
+    setError(null)
+
+    if (!title.trim()) return setError('Title is required.')
+    if (title.length > 200) return setError('Title is too long (max 200).')
+    if (!author.trim()) return setError('Author is required.')
+    if (author.length > 100) return setError('Author is too long (max 100).')
+    if (description && description.length > 5000)
+      return setError('Description is too long (max 5000).')
+    if (files.length === 0) return setError('At least one file is required.')
+
+    const seen = new Set<string>()
+    for (const f of files) {
+      if (!f.filename.trim()) return setError('Every file needs a filename.')
+      if (!f.content) return setError(`File "${f.filename}" has no content.`)
+      const key = f.filename.toLowerCase()
+      if (seen.has(key)) return setError(`Duplicate filename: ${f.filename}`)
+      seen.add(key)
+    }
+
+    const payload: SnippetPayload = {
+      title: title.trim(),
+      description: description.trim() || null,
+      author: author.trim(),
+      files: files.map(({ filename, language, content }) => ({
+        filename,
+        language: language || null,
+        content,
+      })),
+      images: images.map(({ filename, mimeType, data }) => ({ filename, mimeType, data })),
+    }
+    void onSubmit(payload)
+  }
+
+  return (
+    <form onSubmit={handleSubmit} className="space-y-8">
+      {/* Meta */}
+      <div className="space-y-5 border border-border bg-card p-6">
+        <div className="space-y-2">
+          <Label htmlFor="title">Title *</Label>
+          <Input
+            id="title"
+            value={title}
+            onChange={(e) => setTitle(e.target.value)}
+            placeholder="e.g. Inventory drag-and-drop system"
+            maxLength={200}
+            required
+          />
+        </div>
+
+        <div className="space-y-2">
+          <Label htmlFor="description">Description</Label>
+          <Textarea
+            id="description"
+            value={description}
+            onChange={(e) => setDescription(e.target.value)}
+            placeholder="What does this snippet do? How do you use it?"
+            maxLength={5000}
+            rows={4}
+          />
+        </div>
+
+        <div className="space-y-2">
+          <Label htmlFor="author">Author *</Label>
+          <Input
+            id="author"
+            value={author}
+            onChange={(e) => setAuthor(e.target.value)}
+            placeholder="your name / handle"
+            maxLength={100}
+            required
+          />
+        </div>
+      </div>
+
+      {/* Files */}
+      <section className="space-y-3">
+        <div className="flex flex-wrap items-center justify-between gap-2">
+          <h2 className="font-mono text-sm font-semibold uppercase tracking-widest text-muted-foreground">
+            <span className="text-primary">▌</span> files ({files.length})
+          </h2>
+          <div className="flex gap-2">
+            <input
+              ref={fileInputRef}
+              type="file"
+              multiple
+              className="hidden"
+              onChange={(e) => void importFiles(e.target.files)}
+            />
+            <Button
+              type="button"
+              variant="outline"
+              size="sm"
+              onClick={() => fileInputRef.current?.click()}
+            >
+              <FileUp className="h-4 w-4" /> Import file
+            </Button>
+            <Button type="button" variant="secondary" size="sm" onClick={addFile}>
+              <Plus className="h-4 w-4" /> Add file
+            </Button>
+          </div>
+        </div>
+
+        <div className="space-y-4">
+          {files.map((f, i) => (
+            <div key={f.uid} className="border border-border bg-card">
+              <div className="flex flex-wrap items-center gap-2 border-b border-border bg-muted/40 p-2">
+                <div className="flex flex-col">
+                  <button
+                    type="button"
+                    onClick={() => moveFile(f.uid, -1)}
+                    disabled={i === 0}
+                    className="text-muted-foreground hover:text-primary disabled:opacity-30"
+                    title="Move up"
+                  >
+                    <GripVertical className="h-4 w-4 rotate-180" />
+                  </button>
+                </div>
+                <Input
+                  value={f.filename}
+                  onChange={(e) => patchFile(f.uid, { filename: e.target.value })}
+                  placeholder="filename.gs2"
+                  className="h-8 max-w-[220px]"
+                />
+                <Select
+                  value={f.language ?? 'gs2'}
+                  onValueChange={(v) => patchFile(f.uid, { language: v })}
+                >
+                  <SelectTrigger className="h-8 w-[180px]">
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {LANGUAGES.map((l) => (
+                      <SelectItem key={l.value} value={l.value}>
+                        {l.label}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+                <Button
+                  type="button"
+                  variant="ghost"
+                  size="icon"
+                  className="ml-auto h-8 w-8 text-muted-foreground hover:text-destructive"
+                  onClick={() => removeFile(f.uid)}
+                  title="Remove file"
+                >
+                  <Trash2 className="h-4 w-4" />
+                </Button>
+              </div>
+              <Textarea
+                value={f.content}
+                onChange={(e) => patchFile(f.uid, { content: e.target.value })}
+                placeholder="// paste or write code…"
+                rows={10}
+                className="border-0 focus-visible:ring-0"
+              />
+            </div>
+          ))}
+          {files.length === 0 && (
+            <p className="border border-dashed border-border px-4 py-8 text-center font-mono text-xs text-muted-foreground">
+              No files. Add or import one to publish.
+            </p>
+          )}
+        </div>
+      </section>
+
+      {/* Images */}
+      <section className="space-y-3">
+        <div className="flex flex-wrap items-center justify-between gap-2">
+          <h2 className="font-mono text-sm font-semibold uppercase tracking-widest text-muted-foreground">
+            <span className="text-secondary">▌</span> images ({images.length}/{MAX_IMAGES}){' '}
+            <span className="normal-case text-muted-foreground/60">— optional</span>
+          </h2>
+          <input
+            ref={imageInputRef}
+            type="file"
+            accept="image/*"
+            multiple
+            className="hidden"
+            onChange={(e) => void addImages(e.target.files)}
+          />
+          <Button
+            type="button"
+            variant="outline"
+            size="sm"
+            onClick={() => imageInputRef.current?.click()}
+            disabled={images.length >= MAX_IMAGES}
+          >
+            <ImageIcon className="h-4 w-4" /> Add images
+          </Button>
+        </div>
+
+        {images.length > 0 ? (
+          <div className="grid grid-cols-2 gap-3 sm:grid-cols-3 md:grid-cols-4">
+            {images.map((img, i) => (
+              <div
+                key={`${img.filename}-${i}`}
+                className="group relative aspect-video overflow-hidden border border-border bg-background"
+              >
+                <img
+                  src={imageDataUrl(img.mimeType, img.data)}
+                  alt={img.filename}
+                  className="h-full w-full object-cover"
+                />
+                <button
+                  type="button"
+                  onClick={() => removeImage(i)}
+                  className="absolute right-1 top-1 flex h-6 w-6 items-center justify-center bg-destructive text-destructive-foreground opacity-0 transition-opacity group-hover:opacity-100"
+                  title="Remove image"
+                >
+                  <X className="h-3.5 w-3.5" />
+                </button>
+                <span className="absolute inset-x-0 bottom-0 truncate bg-black/70 px-1.5 py-0.5 font-mono text-[10px] text-foreground/90">
+                  {img.filename}
+                </span>
+              </div>
+            ))}
+          </div>
+        ) : (
+          <p className="border border-dashed border-border px-4 py-8 text-center font-mono text-xs text-muted-foreground">
+            Attach screenshots or diagrams (png/jpg, up to {humanSize(MAX_IMAGE_BYTES)} each).
+          </p>
+        )}
+      </section>
+
+      {error && (
+        <p className="border border-destructive/50 bg-destructive/10 px-3 py-2 font-mono text-xs text-destructive">
+          {error}
+        </p>
+      )}
+
+      <div className="flex items-center gap-3">
+        <Button type="submit" size="lg" disabled={submitting}>
+          {submitting ? 'Saving…' : submitLabel}
+        </Button>
+        <span className="font-mono text-xs text-muted-foreground">
+          {files.length} {files.length === 1 ? 'file' : 'files'} · {images.length} images
+        </span>
+      </div>
+    </form>
+  )
+}
+
+function guessLanguage(filename: string): string {
+  const ext = filename.split('.').pop()?.toLowerCase() ?? ''
+  const map: Record<string, string> = {
+    gs2: 'gs2',
+    gs: 'gs1',
+    js: 'javascript',
+    jsx: 'javascript',
+    mjs: 'javascript',
+    cjs: 'javascript',
+    ts: 'typescript',
+    tsx: 'typescript',
+    json: 'json',
+    html: 'html',
+    htm: 'html',
+    css: 'css',
+    sql: 'sql',
+    sh: 'bash',
+    bash: 'bash',
+    c: 'c',
+    h: 'c',
+    cpp: 'cpp',
+    cc: 'cpp',
+    cs: 'csharp',
+    py: 'python',
+    php: 'php',
+  }
+  return map[ext] ?? 'gs2'
+}
