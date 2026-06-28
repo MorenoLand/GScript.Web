@@ -1,6 +1,6 @@
 import { useState, type FormEvent } from 'react'
 import { Link, useLocation, useNavigate } from 'react-router-dom'
-import { LogIn, ShieldCheck, Terminal } from 'lucide-react'
+import { LogIn, ShieldCheck } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
@@ -42,18 +42,19 @@ export function LoginPage() {
     <div className="container flex min-h-[70vh] items-center justify-center py-12">
       <div className="w-full max-w-md">
         <div className="mb-6 flex flex-col items-center text-center">
-          <span className="mb-4 flex h-12 w-12 items-center justify-center border border-primary bg-primary/10 text-primary shadow-pixel-amber">
-            <Terminal className="h-6 w-6" />
+          <span className="mb-4 flex h-11 w-11 items-center justify-center rounded-xl bg-primary text-primary-foreground shadow-soft">
+            <LogIn className="h-5 w-5" />
           </span>
-          <h1 className="font-mono text-2xl font-extrabold tracking-tight">
-            <span className="text-primary">authenticate</span>
-          </h1>
-          <p className="mt-1 font-mono text-xs uppercase tracking-widest text-muted-foreground">
-            panel access required to publish
+          <h1 className="text-2xl font-semibold tracking-tight">Sign in</h1>
+          <p className="mt-1 text-sm text-muted-foreground">
+            Required only to publish or edit your snippets
           </p>
         </div>
 
-        <form onSubmit={onSubmit} className="space-y-4 border border-border bg-card p-6">
+        <form
+          onSubmit={onSubmit}
+          className="space-y-4 rounded-xl border border-border bg-card p-6 shadow-soft"
+        >
           <div className="space-y-2">
             <Label htmlFor="username">Username</Label>
             <Input
@@ -81,28 +82,22 @@ export function LoginPage() {
           </div>
 
           {error && (
-            <p className="border border-destructive/50 bg-destructive/10 px-3 py-2 font-mono text-xs text-destructive">
+            <p className="rounded-md border border-destructive/30 bg-destructive/10 px-3 py-2 text-sm text-destructive">
               {error}
             </p>
           )}
 
           <Button type="submit" className="w-full" disabled={submitting}>
-            {submitting ? (
-              'Authenticating…'
-            ) : (
-              <>
-                <LogIn className="h-4 w-4" /> Sign in
-              </>
-            )}
+            {submitting ? 'Signing in…' : 'Sign in'}
           </Button>
 
-          <div className="flex items-center gap-2 pt-1 font-mono text-[11px] text-muted-foreground">
-            <ShieldCheck className="h-3.5 w-3.5 text-phosphor" />
-            Browsing is public — sign in only to publish or edit your snippets.
+          <div className="flex items-center gap-2 pt-1 text-xs text-muted-foreground">
+            <ShieldCheck className="h-3.5 w-3.5 text-primary/70" />
+            Browsing the gallery is public. Sign in only to publish or edit.
           </div>
         </form>
 
-        <p className="mt-4 text-center font-mono text-xs text-muted-foreground">
+        <p className="mt-4 text-center text-sm text-muted-foreground">
           <Link to="/" className="hover:text-primary">
             ← back to gallery
           </Link>

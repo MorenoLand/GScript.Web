@@ -4,25 +4,25 @@ import { cva, type VariantProps } from 'class-variance-authority'
 import { cn } from '@/lib/utils'
 
 const buttonVariants = cva(
-  'inline-flex items-center justify-center gap-2 whitespace-nowrap font-mono text-sm font-semibold uppercase tracking-wider transition-all duration-100 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-background disabled:pointer-events-none disabled:opacity-50 [&_svg]:size-4 [&_svg]:shrink-0 active:translate-x-[1px] active:translate-y-[1px]',
+  'inline-flex items-center justify-center gap-2 whitespace-nowrap rounded-md text-sm font-medium transition-all duration-150 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-background disabled:pointer-events-none disabled:opacity-50 [&_svg]:size-4 [&_svg]:shrink-0 active:scale-[0.98]',
   {
     variants: {
       variant: {
         default:
-          'bg-primary text-primary-foreground shadow-pixel-amber hover:bg-[#ffc233] hover:shadow-none',
+          'bg-primary text-primary-foreground shadow-soft hover:bg-[hsl(18_88%_34%)]',
         secondary:
-          'bg-secondary text-secondary-foreground shadow-pixel-phosphor hover:brightness-110 hover:shadow-none',
+          'bg-secondary text-secondary-foreground hover:bg-accent',
         outline:
-          'border border-border bg-transparent text-foreground hover:border-primary hover:text-primary hover:bg-accent',
+          'border border-border bg-transparent text-foreground hover:border-primary/40 hover:bg-accent hover:text-primary',
         ghost: 'text-foreground hover:bg-accent hover:text-primary',
         destructive:
-          'bg-destructive text-destructive-foreground hover:brightness-110',
+          'bg-destructive text-destructive-foreground shadow-soft hover:bg-[hsl(0_72%_39%)]',
         link: 'text-primary underline-offset-4 hover:underline',
       },
       size: {
         default: 'h-10 px-4 py-2',
-        sm: 'h-8 px-3 text-xs',
-        lg: 'h-12 px-6 text-base',
+        sm: 'h-8 px-3 text-[13px]',
+        lg: 'h-11 px-6 text-[15px]',
         icon: 'h-10 w-10',
       },
     },

@@ -41,61 +41,26 @@ export default {
           DEFAULT: 'hsl(var(--card))',
           foreground: 'hsl(var(--card-foreground))',
         },
-        // Retro CRT accents (raw, usable directly e.g. text-amber-crt)
-        amber: {
-          crt: '#ffb000',
-          dim: '#b87900',
-        },
-        phosphor: {
-          DEFAULT: '#5cf2a0',
-          dim: '#2fae72',
-        },
-        cyber: {
-          pink: '#ff5c8a',
-          cyan: '#56c8ff',
-        },
-        ink: {
-          950: '#0a0a0c',
-          900: '#0f0f12',
-          850: '#141418',
-          800: '#1b1b21',
-          700: '#26262e',
+        code: {
+          DEFAULT: 'hsl(var(--code))',
+          foreground: '#e7e5e4',
         },
       },
       fontFamily: {
-        sans: ['"Space Grotesk"', 'system-ui', 'sans-serif'],
-        mono: ['"JetBrains Mono"', 'ui-monospace', 'SFMono-Regular', 'monospace'],
+        sans: ['Geist', 'system-ui', 'sans-serif'],
+        mono: ['"Geist Mono"', 'ui-monospace', 'SFMono-Regular', 'monospace'],
       },
       borderRadius: {
+        xl: 'calc(var(--radius) + 4px)',
         lg: 'var(--radius)',
-        md: 'calc(var(--radius) - 2px)',
-        sm: 'calc(var(--radius) - 4px)',
+        md: 'calc(var(--radius) - 4px)',
+        sm: 'calc(var(--radius) - 8px)',
       },
       boxShadow: {
-        // Hard, no blur — pixel/retro lift
-        pixel: '4px 4px 0 0 hsl(var(--border))',
-        'pixel-amber': '4px 4px 0 0 #ffb000',
-        'pixel-phosphor': '4px 4px 0 0 #5cf2a0',
-        glow: '0 0 0 1px #ffb000, 0 0 18px -2px rgba(255,176,0,0.45)',
-      },
-      keyframes: {
-        flicker: {
-          '0%, 100%': { opacity: '1' },
-          '50%': { opacity: '0.92' },
-        },
-        scan: {
-          '0%': { transform: 'translateY(-100%)' },
-          '100%': { transform: 'translateY(100%)' },
-        },
-        blink: {
-          '0%, 49%': { opacity: '1' },
-          '50%, 100%': { opacity: '0' },
-        },
-      },
-      animation: {
-        flicker: 'flicker 4s infinite',
-        scan: 'scan 6s linear infinite',
-        blink: 'blink 1.1s step-end infinite',
+        // Soft, background-tinted lift. No hard pixel shadows.
+        soft: '0 1px 2px rgba(40, 30, 20, 0.04), 0 1px 3px rgba(40, 30, 20, 0.06)',
+        card: '0 2px 4px rgba(40, 30, 20, 0.04), 0 12px 28px -16px rgba(40, 30, 20, 0.18)',
+        pop: '0 8px 30px -12px rgba(40, 30, 20, 0.22)',
       },
     },
   },

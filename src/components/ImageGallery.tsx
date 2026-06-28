@@ -31,7 +31,7 @@ export function ImageGallery({ images }: { images: SnippetImage[] }) {
           <button
             key={`${img.filename}-${i}`}
             onClick={() => setActive(i)}
-            className="group relative aspect-video overflow-hidden border border-border bg-background transition-colors hover:border-primary"
+            className="group relative aspect-video overflow-hidden rounded-lg border border-border bg-background transition-colors hover:border-primary/40"
           >
             <img
               src={imageDataUrl(img.mimeType, img.data)}

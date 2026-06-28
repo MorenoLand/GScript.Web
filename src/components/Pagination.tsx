@@ -24,8 +24,8 @@ export function Pagination({ page, hasNext, onChange, loading }: PaginationProps
         Prev
       </Button>
 
-      <span className="min-w-[80px] text-center font-mono text-xs uppercase tracking-widest text-muted-foreground">
-        page <span className="text-primary">{page}</span>
+      <span className="min-w-[64px] text-center text-sm text-muted-foreground">
+        Page <span className="font-medium text-foreground">{page}</span>
       </span>
 
       <Button

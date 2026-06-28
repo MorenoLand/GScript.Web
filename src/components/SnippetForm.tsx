@@ -214,7 +214,7 @@ export function SnippetForm({ initial, submitting, submitLabel, onSubmit }: Snip
   return (
     <form onSubmit={handleSubmit} className="space-y-8">
       {/* Meta */}
-      <div className="space-y-5 border border-border bg-card p-6">
+      <div className="space-y-5 rounded-xl border border-border bg-card p-6 shadow-soft">
         <div className="space-y-2">
           <Label htmlFor="title">Title *</Label>
           <Input
@@ -255,8 +255,8 @@ export function SnippetForm({ initial, submitting, submitLabel, onSubmit }: Snip
       {/* Files */}
       <section className="space-y-3">
         <div className="flex flex-wrap items-center justify-between gap-2">
-          <h2 className="font-mono text-sm font-semibold uppercase tracking-widest text-muted-foreground">
-            <span className="text-primary">▌</span> files ({files.length})
+          <h2 className="text-sm font-medium text-muted-foreground">
+            Files ({files.length})
           </h2>
           <div className="flex gap-2">
             <input
@@ -282,8 +282,8 @@ export function SnippetForm({ initial, submitting, submitLabel, onSubmit }: Snip
 
         <div className="space-y-4">
           {files.map((f, i) => (
-            <div key={f.uid} className="border border-border bg-card">
-              <div className="flex flex-wrap items-center gap-2 border-b border-border bg-muted/40 p-2">
+            <div key={f.uid} className="overflow-hidden rounded-lg border border-border bg-card">
+              <div className="flex flex-wrap items-center gap-2 border-b border-border bg-muted p-2">
                 <div className="flex flex-col">
                   <button
                     type="button"
@@ -337,7 +337,7 @@ export function SnippetForm({ initial, submitting, submitLabel, onSubmit }: Snip
             </div>
           ))}
           {files.length === 0 && (
-            <p className="border border-dashed border-border px-4 py-8 text-center font-mono text-xs text-muted-foreground">
+            <p className="rounded-lg border border-dashed border-border px-4 py-8 text-center text-sm text-muted-foreground">
               No files. Add or import one to publish.
             </p>
           )}
@@ -347,9 +347,9 @@ export function SnippetForm({ initial, submitting, submitLabel, onSubmit }: Snip
       {/* Images */}
       <section className="space-y-3">
         <div className="flex flex-wrap items-center justify-between gap-2">
-          <h2 className="font-mono text-sm font-semibold uppercase tracking-widest text-muted-foreground">
-            <span className="text-secondary">▌</span> images ({images.length}/{MAX_IMAGES}){' '}
-            <span className="normal-case text-muted-foreground/60">— optional</span>
+          <h2 className="text-sm font-medium text-muted-foreground">
+            Images ({images.length}/{MAX_IMAGES}){' '}
+            <span className="text-muted-foreground/60">(optional)</span>
           </h2>
           <input
             ref={imageInputRef}
@@ -375,7 +375,7 @@ export function SnippetForm({ initial, submitting, submitLabel, onSubmit }: Snip
             {images.map((img, i) => (
               <div
                 key={`${img.filename}-${i}`}
-                className="group relative aspect-video overflow-hidden border border-border bg-background"
+                className="group relative aspect-video overflow-hidden rounded-lg border border-border bg-background"
               >
                 <img
                   src={imageDataUrl(img.mimeType, img.data)}
@@ -390,21 +390,21 @@ export function SnippetForm({ initial, submitting, submitLabel, onSubmit }: Snip
                 >
                   <X className="h-3.5 w-3.5" />
                 </button>
-                <span className="absolute inset-x-0 bottom-0 truncate bg-black/70 px-1.5 py-0.5 font-mono text-[10px] text-foreground/90">
+                <span className="absolute inset-x-0 bottom-0 truncate bg-black/70 px-1.5 py-0.5 text-[10px] text-white/90">
                   {img.filename}
                 </span>
               </div>
             ))}
           </div>
         ) : (
-          <p className="border border-dashed border-border px-4 py-8 text-center font-mono text-xs text-muted-foreground">
+          <p className="rounded-lg border border-dashed border-border px-4 py-8 text-center text-sm text-muted-foreground">
             Attach screenshots or diagrams (png/jpg, up to {humanSize(MAX_IMAGE_BYTES)} each).
           </p>
         )}
       </section>
 
       {error && (
-        <p className="border border-destructive/50 bg-destructive/10 px-3 py-2 font-mono text-xs text-destructive">
+        <p className="rounded-md border border-destructive/30 bg-destructive/10 px-3 py-2 text-sm text-destructive">
           {error}
         </p>
       )}
@@ -413,7 +413,7 @@ export function SnippetForm({ initial, submitting, submitLabel, onSubmit }: Snip
         <Button type="submit" size="lg" disabled={submitting}>
           {submitting ? 'Saving…' : submitLabel}
         </Button>
-        <span className="font-mono text-xs text-muted-foreground">
+        <span className="text-sm text-muted-foreground">
           {files.length} {files.length === 1 ? 'file' : 'files'} · {images.length} images
         </span>
       </div>

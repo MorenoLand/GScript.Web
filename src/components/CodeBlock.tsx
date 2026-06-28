@@ -16,9 +16,11 @@ import php from 'react-syntax-highlighter/dist/esm/languages/prism/php'
 import { Check, Copy, Download } from 'lucide-react'
 import { toast } from 'sonner'
 import { cn } from '@/lib/utils'
+import { graalscript } from '@/lib/graalscriptGrammar'
 
-// Register only the grammars we ship. GS2 (Graal Script 2) reuses the JS
-// grammar — it's the closest match and what the gallery highlights it as.
+// Register only the grammars we ship. GS2 (Graal Script 2) uses its own
+// grammar (see graalscriptGrammar.ts) instead of borrowing JavaScript.
+SyntaxHighlighter.registerLanguage('graalscript', graalscript)
 SyntaxHighlighter.registerLanguage('javascript', javascript)
 SyntaxHighlighter.registerLanguage('typescript', typescript)
 SyntaxHighlighter.registerLanguage('json', json)
@@ -43,18 +45,19 @@ interface CodeBlockProps {
 }
 
 const ALIASES: Record<string, string> = {
+  gs2: 'graalscript',
+  gscript2: 'graalscript',
+  graal: 'graalscript',
+  graalscript2: 'graalscript',
+  graalscript: 'graalscript',
+  gs1: 'graalscript',
+  gscript: 'graalscript',
   js: 'javascript',
   jsx: 'javascript',
   mjs: 'javascript',
   cjs: 'javascript',
-  gs2: 'javascript',
-  gscript2: 'javascript',
-  graal: 'javascript',
-  graalscript2: 'javascript',
   ts: 'typescript',
   tsx: 'typescript',
-  gs1: 'javascript',
-  gscript: 'javascript',
   html: 'markup',
   htm: 'markup',
   xml: 'markup',
@@ -66,9 +69,9 @@ const ALIASES: Record<string, string> = {
 }
 
 function toPrismLanguage(lang?: string): string {
-  if (!lang) return 'javascript'
+  if (!lang) return 'graalscript'
   const l = lang.toLowerCase()
-  return ALIASES[l] ?? 'javascript'
+  return ALIASES[l] ?? 'graalscript'
 }
 
 export function CodeBlock({
@@ -106,29 +109,38 @@ export function CodeBlock({
   }
 
   return (
-    <div className={cn('group/code border border-border bg-[#0b0b0e]', className)}>
+    <div
+      className={cn(
+        'overflow-hidden rounded-lg border border-black/5 bg-code shadow-soft',
+        className,
+      )}
+    >
       {!bare && (
-        <div className="flex items-center justify-between border-b border-border bg-muted/40 px-3 py-1.5">
-          <span className="truncate font-mono text-xs text-muted-foreground">
-            <span className="text-primary">›</span> {filename || prismLang}
+        <div className="flex items-center justify-between border-b border-white/10 bg-white/[0.03] px-3.5 py-2">
+          <span className="truncate font-mono text-xs text-stone-400">
+            {filename || prismLang}
           </span>
           <div className="flex items-center gap-1">
             <button
               onClick={copy}
-              className="flex h-6 w-6 items-center justify-center text-muted-foreground transition-colors hover:text-primary"
+              className="flex h-7 w-7 items-center justify-center rounded-md text-stone-400 transition-colors hover:bg-white/10 hover:text-stone-200"
               title="Copy"
               type="button"
             >
-              {copied ? <Check className="h-3.5 w-3.5 text-phosphor" /> : <Copy className="h-3.5 w-3.5" />}
+              {copied ? (
+                <Check className="h-4 w-4 text-emerald-400" />
+              ) : (
+                <Copy className="h-4 w-4" />
+              )}
             </button>
             {filename && (
               <button
                 onClick={download}
-                className="flex h-6 w-6 items-center justify-center text-muted-foreground transition-colors hover:text-primary"
+                className="flex h-7 w-7 items-center justify-center rounded-md text-stone-400 transition-colors hover:bg-white/10 hover:text-stone-200"
                 title="Download"
                 type="button"
               >
-                <Download className="h-3.5 w-3.5" />
+                <Download className="h-4 w-4" />
               </button>
             )}
           </div>
@@ -142,12 +154,15 @@ export function CodeBlock({
           customStyle={{
             margin: 0,
             background: 'transparent',
-            padding: '1rem',
+            padding: '1rem 1.1rem',
             fontSize: '13px',
-            fontFamily: '"JetBrains Mono", monospace',
+            lineHeight: '1.6',
+            fontFamily: '"Geist Mono", ui-monospace, monospace',
           }}
-          lineNumberStyle={{ color: '#3a3a44', minWidth: '2.5em' }}
-          codeTagProps={{ style: { fontFamily: '"JetBrains Mono", monospace' } }}
+          lineNumberStyle={{ color: 'rgba(231,229,228,0.18)', minWidth: '2.5em' }}
+          codeTagProps={{
+            style: { fontFamily: '"Geist Mono", ui-monospace, monospace' },
+          }}
         >
           {code}
         </SyntaxHighlighter>

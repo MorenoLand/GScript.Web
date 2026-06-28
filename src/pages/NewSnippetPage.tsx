@@ -31,14 +31,12 @@ export function NewSnippetPage() {
         </Button>
 
         <div className="mb-8 flex items-center gap-3">
-          <span className="flex h-10 w-10 items-center justify-center border border-primary bg-primary/10 text-primary shadow-pixel-amber">
+          <span className="flex h-10 w-10 items-center justify-center rounded-lg bg-primary text-primary-foreground shadow-soft">
             <FileCode2 className="h-5 w-5" />
           </span>
           <div>
-            <h1 className="font-mono text-2xl font-extrabold tracking-tight">Publish snippet</h1>
-            <p className="font-mono text-xs uppercase tracking-widest text-muted-foreground">
-              add to the GS2 codebase
-            </p>
+            <h1 className="text-2xl font-semibold tracking-tight">Publish snippet</h1>
+            <p className="text-sm text-muted-foreground">Add to the GS2 codebase</p>
           </div>
         </div>
 

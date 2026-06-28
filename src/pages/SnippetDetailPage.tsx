@@ -102,23 +102,23 @@ export function SnippetDetailPage() {
           </Link>
         </Button>
 
-        <div className="border border-border bg-card p-6 sm:p-8">
+        <div className="rounded-xl border border-border bg-card p-6 shadow-soft sm:p-8">
           <div className="flex flex-wrap items-start justify-between gap-4">
             <div className="min-w-0">
-              <h1 className="break-words font-mono text-2xl font-extrabold leading-tight sm:text-3xl">
+              <h1 className="break-words text-2xl font-semibold leading-tight tracking-tight sm:text-3xl">
                 {snippet.title}
               </h1>
-              <div className="mt-3 flex flex-wrap items-center gap-x-4 gap-y-2 font-mono text-xs text-muted-foreground">
+              <div className="mt-3 flex flex-wrap items-center gap-x-4 gap-y-2 text-sm text-muted-foreground">
                 <span className="flex items-center gap-1.5">
-                  <UserIcon className="h-3.5 w-3.5 text-phosphor" />
-                  <span className="text-foreground">{snippet.author}</span>
+                  <UserIcon className="h-3.5 w-3.5" />
+                  <span className="font-medium text-foreground">{snippet.author}</span>
                 </span>
                 <span className="flex items-center gap-1.5">
                   <Calendar className="h-3.5 w-3.5" />
                   {formatDate(snippet.createdAt)}
                 </span>
                 {edited && (
-                  <span className="text-amber-dim">edited {formatDate(snippet.editedAt)}</span>
+                  <span>edited {formatDate(snippet.editedAt)}</span>
                 )}
               </div>
             </div>
@@ -159,9 +159,7 @@ export function SnippetDetailPage() {
 
         {/* Files */}
         <section className="mt-8">
-          <h2 className="mb-3 font-mono text-sm font-semibold uppercase tracking-widest text-muted-foreground">
-            <span className="text-primary">▌</span> source
-          </h2>
+          <h2 className="mb-3 text-sm font-medium text-muted-foreground">Source</h2>
           <div className="space-y-4">
             {snippet.files.map((f, i) => (
               <CodeBlock
@@ -177,9 +175,7 @@ export function SnippetDetailPage() {
         {/* Images */}
         {snippet.images.length > 0 && (
           <section className="mt-8">
-            <h2 className="mb-3 font-mono text-sm font-semibold uppercase tracking-widest text-muted-foreground">
-              <span className="text-secondary">▌</span> attachments
-            </h2>
+            <h2 className="mb-3 text-sm font-medium text-muted-foreground">Attachments</h2>
             <ImageGallery images={snippet.images} />
           </section>
         )}

@@ -83,14 +83,12 @@ export function EditSnippetPage() {
         </Button>
 
         <div className="mb-8 flex items-center gap-3">
-          <span className="flex h-10 w-10 items-center justify-center border border-primary bg-primary/10 text-primary shadow-pixel-amber">
+          <span className="flex h-10 w-10 items-center justify-center rounded-lg bg-primary text-primary-foreground shadow-soft">
             <Pencil className="h-5 w-5" />
           </span>
           <div>
-            <h1 className="font-mono text-2xl font-extrabold tracking-tight">Edit snippet</h1>
-            <p className="truncate font-mono text-xs uppercase tracking-widest text-muted-foreground">
-              {snippet.title}
-            </p>
+            <h1 className="text-2xl font-semibold tracking-tight">Edit snippet</h1>
+            <p className="truncate text-sm text-muted-foreground">{snippet.title}</p>
           </div>
         </div>
 
