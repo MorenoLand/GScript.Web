@@ -22,6 +22,21 @@ npm run build
 
 Production builds use `https://api.moreno.land` unless `VITE_API_URL` is set.
 
+## Publishing
+
+Showcase items can include:
+
+- title, description, author, and category
+- one thumbnail image
+- multiple text/code files
+- up to 8 image attachments
+
+The file importer only accepts text/code style files. Binary files, videos, archives, and other non-text uploads are rejected so they do not get parsed as source code in the detail view.
+
+Supported text imports include common web/code files plus `.gs2`, `.gscript`, `.gs1`, `.nw`, `.gmap`, `.zelda`, `.graal`, and `.gani`.
+
+Supported categories are defined in `src/lib/constants.ts`.
+
 ## API
 
 | Action | Endpoint | Auth |
