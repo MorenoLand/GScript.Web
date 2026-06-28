@@ -7,8 +7,8 @@ import {
   useState,
   type ReactNode,
 } from 'react'
-import { clearToken, getMe, getToken, login as apiLogin, setToken } from '@/lib/api'
-import type { AuthUser, LoginResponse } from '@/lib/types'
+import { clearToken, getMe, getToken, setToken } from '@/lib/api'
+import type { AuthUser } from '@/lib/types'
 
 const USER_KEY = 'gs2cb.user'
 
@@ -16,7 +16,7 @@ interface AuthContextValue {
   user: AuthUser | null
   isAuthenticated: boolean
   isLoading: boolean
-  login: (username: string, password: string) => Promise<AuthUser>
+  loginWithDiscordToken: (token: string, username: string, nickname?: string | null, avatarUrl?: string | null) => AuthUser
   logout: () => void
 }
 
@@ -31,11 +31,33 @@ function readStoredUser(): AuthUser | null {
   }
 }
 
+function readDiscordOAuthUser(): AuthUser | null {
+  const hash = new URLSearchParams(window.location.hash.replace(/^#/, ''))
+  const token = hash.get('token')
+  const username = hash.get('username')
+  if (!token || !username) return null
+  const next: AuthUser = {
+    username,
+    nickname: hash.get('nickname'),
+    avatarUrl: hash.get('avatar_url'),
+    role: hash.get('bot_admin') === 'true' ? 'admin' : hash.get('bot_editor') === 'true' ? 'editor' : 'user',
+    canManageShowcase: hash.get('can_manage_showcase') === 'true',
+    canPostShowcase: hash.get('can_post_showcase') !== 'false',
+    isShowcaseBlocked: hash.get('showcase_blocked') === 'true',
+  }
+  setToken(token)
+  localStorage.setItem(USER_KEY, JSON.stringify(next))
+  return next
+}
+
 export function AuthProvider({ children }: { children: ReactNode }) {
-  const [user, setUser] = useState<AuthUser | null>(() => (getToken() ? readStoredUser() : null))
+  const [user, setUser] = useState<AuthUser | null>(() => readDiscordOAuthUser() ?? (getToken() ? readStoredUser() : null))
   const [isLoading, setIsLoading] = useState<boolean>(() => !!getToken())
 
-  // On first load, validate the persisted token against /auth/user.
+  useEffect(() => {
+    if (window.location.hash.includes('token=')) window.history.replaceState(null, '', window.location.pathname + window.location.search)
+  }, [])
+
   useEffect(() => {
     const token = getToken()
     if (!token) {
@@ -54,7 +76,11 @@ export function AuthProvider({ children }: { children: ReactNode }) {
           const next: AuthUser = {
             username: me.username,
             nickname: me.nickname ?? null,
+            avatarUrl: me.avatarUrl ?? me.avatar_url ?? null,
             role: me.role ?? 'user',
+            canManageShowcase: !!me.canManageShowcase,
+            canPostShowcase: me.canPostShowcase !== false,
+            isShowcaseBlocked: !!me.isShowcaseBlocked,
           }
           localStorage.setItem(USER_KEY, JSON.stringify(next))
           setUser(next)
@@ -72,13 +98,13 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     }
   }, [])
 
-  const login = useCallback(async (username: string, password: string) => {
-    const res: LoginResponse = await apiLogin(username, password)
-    setToken(res.token)
+  const loginWithDiscordToken = useCallback((token: string, username: string, nickname?: string | null, avatarUrl?: string | null) => {
+    setToken(token)
     const next: AuthUser = {
-      username: res.username,
-      nickname: res.nickname ?? null,
-      role: res.role ?? 'user',
+      username,
+      nickname: nickname ?? null,
+      avatarUrl: avatarUrl ?? null,
+      role: 'user',
     }
     localStorage.setItem(USER_KEY, JSON.stringify(next))
     setUser(next)
@@ -96,10 +122,10 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       user,
       isAuthenticated: !!user,
       isLoading,
-      login,
+      loginWithDiscordToken,
       logout,
     }),
-    [user, isLoading, login, logout],
+    [user, isLoading, loginWithDiscordToken, logout],
   )
 
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>

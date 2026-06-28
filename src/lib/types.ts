@@ -4,6 +4,9 @@ export interface SnippetListItem {
   id: number
   title: string
   description: string | null
+  category?: string | null
+  thumbnailMimeType?: string | null
+  thumbnailData?: string | null
   author: string
   uploaderId: string
   createdAt: string
@@ -35,6 +38,9 @@ export interface SnippetDetail {
   id: number
   title: string
   description: string | null
+  category?: string | null
+  thumbnailMimeType?: string | null
+  thumbnailData?: string | null
   author: string
   uploaderId: string
   createdAt: string
@@ -58,15 +64,29 @@ export interface SnippetImageInput {
 export interface SnippetPayload {
   title: string
   description?: string | null
+  category?: string | null
+  thumbnailMimeType?: string | null
+  thumbnailData?: string | null
   author: string
   files: SnippetFileInput[]
   images?: SnippetImageInput[]
 }
 
+export type ShowcaseListItem = SnippetListItem
+export type ShowcaseDetail = SnippetDetail
+export type ShowcaseFileInput = SnippetFileInput
+export type ShowcaseImageInput = SnippetImageInput
+export type ShowcasePayload = SnippetPayload
+
 export interface AuthUser {
   username: string
   nickname?: string | null
+  avatarUrl?: string | null
+  avatar_url?: string | null
   role: string
+  canManageShowcase?: boolean
+  canPostShowcase?: boolean
+  isShowcaseBlocked?: boolean
 }
 
 export interface LoginResponse {

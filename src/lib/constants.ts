@@ -22,3 +22,12 @@ export const LANGUAGES: { value: string; label: string }[] = [
   { value: 'python', label: 'Python' },
   { value: 'php', label: 'PHP' },
 ]
+
+export const SHOWCASE_CATEGORIES: { value: string; label: string }[] = [
+  { value: 'script', label: 'Script' },
+  { value: 'level', label: 'Level' },
+  { value: 'gani', label: 'Gani' },
+  { value: 'graphic', label: 'Graphic' },
+  { value: 'tool', label: 'Tool' },
+  { value: 'resource', label: 'Resource' },
+]

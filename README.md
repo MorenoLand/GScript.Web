@@ -1,73 +1,45 @@
-# GS2 // CODEBASE
+# #gscript showcase
 
-A retro, CRT-flavored front-end for the **GS2 Codebase** section of `Moreno.API` — a
-public gallery for Graal Script 2 (GS2) snippets, projects and code. Anyone can browse;
-authenticated panel users can publish, edit and delete their own snippets.
+React 19 + TypeScript + Vite front-end for the #gscript showcase.
 
-Pure **React 19 + TypeScript + Vite** SPA. Styling is hand-rolled **shadcn-style** UI
-(Radix primitives + Tailwind) with a custom amber/phosphor retro theme. Code is
-highlighted with Prism — GS2 reuses the JavaScript grammar.
+The site is a public gallery for scripts, levels, ganis, graphics, tools, and other #gscript resources. Discord OAuth is used for publishing and account controls through `Moreno.API`.
 
-## Features
+## Routes
 
-- `/` — paginated snippet gallery (server-side `limit`/`offset`, 12 per page)
-- `/snippet/:id` — full snippet: metadata, syntax-highlighted files (copy / download), image attachment gallery with lightbox
-- `/new` — publish a multi-file snippet (auth)
-- `/snippet/:id/edit` — edit your own snippets (owner or admin)
-- `/login` — sign in via `POST /api/auth/login` (JWT stored locally)
-- Optional **image attachments** per snippet (screenshots/diagrams) — stored server-side as `LONGBLOB`, shipped to the client as base64.
+- `/` - landing page and latest showcase items
+- `/snippet/:id` - showcase item details, attached files, images, and downloads
+- `/new` - publish a showcase item
+- `/snippet/:id/edit` - edit an item
+- `/login` - Discord OAuth login
 
-## Getting started
+## Local
 
 ```bash
-pnpm install
-pnpm dev          # http://localhost:5173
+npm install
+npm run dev
+npm run build
 ```
 
-By default the dev server proxies `/api` and `/up` to `http://localhost:5000`
-(where `Moreno.API` listens). If your API runs elsewhere, set it:
+Production builds use `https://api.moreno.land` unless `VITE_API_URL` is set.
 
-```bash
-# .env.local
-VITE_API_TARGET=http://localhost:5000   # dev proxy target
-# VITE_API_URL=https://api.moreno.land  # absolute base for production builds
-```
+## API
 
-Leave `VITE_API_URL` empty to keep requests relative (works when the built SPA is
-served from the same origin as the API).
-
-```bash
-pnpm build       # type-check + production build
-pnpm preview     # serve the production build
-```
-
-## How it talks to the API
-
-| Action            | Endpoint                                  | Auth   |
-| ----------------- | ----------------------------------------- | ------ |
-| Browse / paginate | `GET  /api/gs2-codebase/?limit=&offset=`  | public |
-| View snippet      | `GET  /api/gs2-codebase/{id}`             | public |
-| Publish           | `POST /api/gs2-codebase/`                 | JWT    |
-| Edit              | `PUT  /api/gs2-codebase/{id}`             | owner/admin |
-| Delete            | `DELETE /api/gs2-codebase/{id}`           | owner/admin |
-| Sign in           | `POST /api/auth/login`                    | —      |
-
-`uploaderId` is taken from the JWT `sub` claim server-side; edit/delete are gated to
-`role==admin || uploader_id==sub`.
-
-## Backend note (image attachments)
-
-`Moreno.API/Endpoints/GS2CodebaseEndpoints.cs` was extended so snippets accept an
-optional `images[]` (base64 + mime). They are stored in a new
-`gs2_codebase_images` table (LONGBLOB, `ON DELETE CASCADE`). Create it with the DDL in
-[`Moreno.API/README.md`](../Moreno.API/README.md) (Database Setup section).
-
-Validation mirrors the API: up to **8 images**, each ≤ **3 MB** decoded, `image/*` MIME.
+| Action | Endpoint | Auth |
+| --- | --- | --- |
+| Browse | `GET /api/gscript-showcase?limit=&offset=` | public |
+| View | `GET /api/gscript-showcase/{id}` | public |
+| Publish | `POST /api/gscript-showcase` | Discord JWT |
+| Edit | `PUT /api/gscript-showcase/{id}` | owner/admin |
+| Delete | `DELETE /api/gscript-showcase/{id}` | owner/admin |
+| Block user | `POST /api/gscript-showcase/blocked-users/{discordId}` | admin |
+| Unblock user | `DELETE /api/gscript-showcase/blocked-users/{discordId}` | admin |
 
 ## Tech
 
-- React 19, React Router 7, TanStack Query 5
-- Tailwind CSS 3 + `tailwindcss-animate`
-- Radix UI primitives (dialog, tabs, select, tooltip, dropdown, label, separator, slot)
-- `react-syntax-highlighter` (PrismLight, only the grammars we ship)
-- lucide-react icons, sonner toasts
+- React 19
+- React Router 7
+- TanStack Query 5
+- Tailwind CSS
+- Radix UI primitives
+- Prism syntax highlighting
+- Moreno.API

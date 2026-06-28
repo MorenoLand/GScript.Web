@@ -7,7 +7,7 @@
 @layer base {
   :root {
     /* Light, warm-neutral palette. Calm and quiet by design. (HSL channels) */
-    --background: 36 33% 98%;        /* warm paper */
+    --background: 38 18% 94%;        /* warm paper */
     --foreground: 40 7% 11%;         /* ink */
 
     --card: 0 0% 100%;
@@ -16,24 +16,24 @@
     --popover: 0 0% 100%;
     --popover-foreground: 40 7% 11%;
 
-    --primary: 18 88% 40%;           /* terracota */
+    --primary: 38 96% 50%;           /* gold */
     --primary-foreground: 0 0% 100%;
 
-    --secondary: 36 14% 95%;         /* warm neutral fill */
+    --secondary: 38 13% 89%;         /* warm neutral fill */
     --secondary-foreground: 40 7% 11%;
 
-    --muted: 38 14% 94%;
-    --muted-foreground: 36 7% 42%;
+    --muted: 38 12% 88%;
+    --muted-foreground: 38 7% 35%;
 
-    --accent: 36 16% 93%;
+    --accent: 38 16% 86%;
     --accent-foreground: 40 7% 11%;
 
     --destructive: 0 72% 45%;
     --destructive-foreground: 0 0% 100%;
 
-    --border: 38 22% 89%;            /* hairline */
-    --input: 38 22% 89%;
-    --ring: 18 88% 40%;
+    --border: 38 16% 78%;            /* hairline */
+    --input: 38 16% 78%;
+    --ring: 38 96% 42%;
 
     /* Dark code surface, used by CodeBlock for readable syntax */
     --code: 250 10% 9%;
@@ -41,12 +41,35 @@
     --radius: 0.75rem;
   }
 
+  .dark {
+    --background: 250 12% 7%;
+    --foreground: 36 24% 94%;
+    --card: 250 11% 10%;
+    --card-foreground: 36 24% 94%;
+    --popover: 250 11% 10%;
+    --popover-foreground: 36 24% 94%;
+    --primary: 42 96% 58%;
+    --primary-foreground: 250 12% 7%;
+    --secondary: 250 9% 14%;
+    --secondary-foreground: 36 24% 94%;
+    --muted: 250 8% 15%;
+    --muted-foreground: 36 10% 72%;
+    --accent: 250 8% 16%;
+    --accent-foreground: 36 24% 94%;
+    --destructive: 0 72% 58%;
+    --destructive-foreground: 0 0% 100%;
+    --border: 250 9% 22%;
+    --input: 250 9% 22%;
+    --ring: 42 96% 58%;
+    --code: 250 12% 5%;
+  }
+
   * {
     border-color: hsl(var(--border));
   }
 
   html {
-    color-scheme: light;
+    color-scheme: light dark;
   }
 
   body {
@@ -77,5 +100,197 @@
   }
   ::-webkit-scrollbar-thumb:hover {
     background: hsl(38 12% 70%);
+  }
+}
+
+@layer components {
+  .brand-discord {
+    color: hsl(var(--foreground));
+    text-shadow: none;
+  }
+
+  .brand-discord .text-muted-foreground {
+    color: hsl(var(--muted-foreground));
+    text-shadow: none;
+  }
+
+  .dark .brand-discord {
+    color: hsl(150 80% 62%);
+    text-shadow:
+      0 1px 0 hsl(250 12% 4%),
+      0 0 4px hsl(230 100% 68% / 0.55),
+      0 0 8px hsl(150 80% 48% / 0.28);
+  }
+
+  .dark .brand-discord .text-muted-foreground {
+    color: hsl(235 95% 86%);
+    text-shadow:
+      0 1px 0 hsl(250 12% 4%),
+      0 0 5px hsl(230 100% 68% / 0.5);
+  }
+
+  .showcase-page {
+    min-height: calc(100vh - 4rem);
+    background:
+      radial-gradient(circle at 50% 10%, hsl(var(--primary) / 0.12), transparent 24rem),
+      linear-gradient(135deg, hsl(38 18% 76% / 0.35) 25%, transparent 25%) 0 0 / 88px 88px,
+      linear-gradient(225deg, hsl(38 18% 80% / 0.32) 25%, transparent 25%) 0 0 / 88px 88px,
+      hsl(var(--background));
+  }
+
+  .dark .showcase-page {
+    background:
+      radial-gradient(circle at 50% 8%, hsl(var(--primary) / 0.12), transparent 26rem),
+      linear-gradient(135deg, hsl(var(--foreground) / 0.035) 25%, transparent 25%) 0 0 / 96px 96px,
+      linear-gradient(225deg, hsl(var(--foreground) / 0.026) 25%, transparent 25%) 0 0 / 96px 96px,
+      hsl(var(--background));
+  }
+
+  .showcase-hero {
+    position: relative;
+    background:
+      radial-gradient(circle at 50% 18%, hsl(var(--primary) / 0.12), transparent 22rem),
+      linear-gradient(135deg, hsl(38 18% 76% / 0.35) 25%, transparent 25%) 0 0 / 88px 88px,
+      linear-gradient(225deg, hsl(38 18% 80% / 0.32) 25%, transparent 25%) 0 0 / 88px 88px,
+      hsl(var(--background));
+  }
+
+  .dark .showcase-hero {
+    background:
+      radial-gradient(circle at 50% 18%, hsl(var(--primary) / 0.2), transparent 24rem),
+      linear-gradient(135deg, hsl(var(--foreground) / 0.055) 25%, transparent 25%) 0 0 / 82px 82px,
+      linear-gradient(225deg, hsl(var(--foreground) / 0.04) 25%, transparent 25%) 0 0 / 82px 82px,
+      hsl(var(--background));
+  }
+
+  .showcase-hero::before {
+    content: "";
+    position: absolute;
+    inset: 0;
+    pointer-events: none;
+    background: linear-gradient(to bottom, hsl(var(--background) / 0.18), hsl(var(--background) / 0.7) 82%, hsl(var(--background)));
+  }
+
+  .showcase-mark {
+    display: grid;
+    place-items: center;
+    width: 10rem;
+    height: 10rem;
+    margin-bottom: 2rem;
+    filter: drop-shadow(0 1.5rem 3rem hsl(var(--primary) / 0.28));
+  }
+
+  .showcase-mark img {
+    width: 100%;
+    height: 100%;
+    object-fit: contain;
+    image-rendering: pixelated;
+  }
+
+  .showcase-hero-word {
+    display: inline-block;
+    color: hsl(var(--primary));
+    animation: showcase-word-flip 2.2s ease-in-out both;
+    transform-origin: 50% 60%;
+  }
+
+  .dark .showcase-hero-word {
+    text-shadow: 0 0 1rem hsl(var(--primary) / 0.24);
+  }
+
+  .showcase-rail {
+    position: absolute;
+    right: 50%;
+    bottom: 1.75rem;
+    width: min(100vw, 92rem);
+    overflow: hidden;
+    transform: translateX(50%);
+    mask-image: linear-gradient(to right, transparent, black 12%, black 88%, transparent);
+  }
+
+  .showcase-rail-track {
+    display: flex;
+    width: max-content;
+    gap: 1rem;
+    animation: showcase-rail 38s linear infinite;
+  }
+
+  .showcase-rail:hover .showcase-rail-track {
+    animation-play-state: paused;
+  }
+
+  .showcase-rail-card {
+    display: grid;
+    grid-template-columns: auto minmax(0, 12rem);
+    align-items: center;
+    gap: 0.85rem;
+    width: 19rem;
+    padding: 0.85rem 1rem;
+    border: 1px solid hsl(var(--border) / 0.85);
+    border-radius: 1rem;
+    background: hsl(var(--card) / 0.72);
+    box-shadow: 0 1.2rem 3rem hsl(250 12% 2% / 0.22);
+    backdrop-filter: blur(12px);
+  }
+
+  .showcase-rail-card:hover {
+    border-color: hsl(var(--primary) / 0.55);
+    background: hsl(var(--card) / 0.9);
+  }
+
+  .showcase-rail-icon {
+    display: grid;
+    place-items: center;
+    width: 2.6rem;
+    height: 2.6rem;
+    color: hsl(var(--primary-foreground));
+    background: hsl(var(--primary));
+    border-radius: 0.8rem;
+  }
+
+  @keyframes showcase-rail {
+    from { transform: translateX(0); }
+    to { transform: translateX(calc(-50% - 0.5rem)); }
+  }
+
+  @keyframes showcase-word-flip {
+    0% { opacity: 0; transform: translateY(0.35em) rotateX(-70deg); filter: blur(0.16rem); }
+    18%, 76% { opacity: 1; transform: translateY(0) rotateX(0); filter: blur(0); }
+    100% { opacity: 0; transform: translateY(-0.28em) rotateX(55deg); filter: blur(0.12rem); }
+  }
+
+  @media (max-width: 640px) {
+    .showcase-mark {
+      width: 6.5rem;
+      height: 6.5rem;
+      margin-bottom: 1.5rem;
+    }
+
+    .showcase-rail {
+      bottom: 1rem;
+    }
+
+    .showcase-rail-card {
+      width: 16rem;
+      grid-template-columns: auto minmax(0, 10rem);
+    }
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .showcase-rail-track {
+      animation: none;
+    }
+
+    .showcase-hero-word {
+      animation: none;
+    }
+  }
+
+  .reduce-motion .showcase-rail-track {
+    animation: none;
+  }
+
+  .reduce-motion .showcase-hero-word {
+    animation: none;
   }
 }

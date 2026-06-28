@@ -12,23 +12,24 @@ import {
   SelectValue,
 } from '@/components/ui/select'
 import { useAuth } from '@/hooks/useAuth'
-import { LANGUAGES } from '@/lib/constants'
+import { LANGUAGES, SHOWCASE_CATEGORIES } from '@/lib/constants'
 import { fileToBase64, imageDataUrl, humanSize } from '@/lib/format'
 import type {
   SnippetDetail,
   SnippetFileInput,
   SnippetImageInput,
-  SnippetPayload,
+  ShowcasePayload,
 } from '@/lib/types'
 
 const MAX_IMAGES = 8
 const MAX_IMAGE_BYTES = 3_000_000
+const TEXT_FILE_EXTENSIONS = new Set(['gs2', 'gscript', 'gs1', 'js', 'jsx', 'ts', 'tsx', 'json', 'html', 'htm', 'css', 'sql', 'txt', 'md', 'nw', 'gmap', 'zelda', 'graal', 'gani', 'c', 'cpp', 'h', 'hpp', 'cs', 'py', 'php', 'xml'])
 
-interface SnippetFormProps {
+interface ShowcaseFormProps {
   initial?: SnippetDetail
   submitting?: boolean
   submitLabel: string
-  onSubmit: (payload: SnippetPayload) => void | Promise<void>
+  onSubmit: (payload: ShowcasePayload) => void | Promise<void>
 }
 
 interface FileRow extends SnippetFileInput {
@@ -46,10 +47,20 @@ function defaultAuthor() {
   return ''
 }
 
-export function SnippetForm({ initial, submitting, submitLabel, onSubmit }: SnippetFormProps) {
+export function ShowcaseForm({ initial, submitting, submitLabel, onSubmit }: ShowcaseFormProps) {
   const { user } = useAuth()
   const [title, setTitle] = useState(initial?.title ?? '')
   const [description, setDescription] = useState(initial?.description ?? '')
+  const [category, setCategory] = useState(initial?.category ?? 'script')
+  const [thumbnail, setThumbnail] = useState<SnippetImageInput | null>(
+    initial?.thumbnailData
+      ? {
+          filename: 'thumbnail',
+          mimeType: initial.thumbnailMimeType ?? 'image/png',
+          data: initial.thumbnailData,
+        }
+      : null,
+  )
   const [author, setAuthor] = useState(
     initial?.author ?? user?.nickname ?? user?.username ?? defaultAuthor(),
   )
@@ -91,6 +102,7 @@ export function SnippetForm({ initial, submitting, submitLabel, onSubmit }: Snip
   const [error, setError] = useState<string | null>(null)
   const fileInputRef = useRef<HTMLInputElement>(null)
   const imageInputRef = useRef<HTMLInputElement>(null)
+  const thumbnailInputRef = useRef<HTMLInputElement>(null)
 
   // ---- file rows ----
   function addFile() {
@@ -126,8 +138,13 @@ export function SnippetForm({ initial, submitting, submitLabel, onSubmit }: Snip
 
   async function importFiles(list: FileList | null) {
     if (!list || !list.length) return
+    setError(null)
     const rows: FileRow[] = []
     for (const file of Array.from(list)) {
+      if (!isTextFile(file)) {
+        setError(`${file.name} is not a text/code file.`)
+        continue
+      }
       const text = await file.text()
       rows.push({
         uid: nextUid(),
@@ -136,7 +153,7 @@ export function SnippetForm({ initial, submitting, submitLabel, onSubmit }: Snip
         content: text,
       })
     }
-    setFiles((prev) => [...prev, ...rows])
+    if (rows.length) setFiles((prev) => [...prev, ...rows])
     if (fileInputRef.current) fileInputRef.current.value = ''
   }
 
@@ -175,6 +192,17 @@ export function SnippetForm({ initial, submitting, submitLabel, onSubmit }: Snip
     setImages((prev) => prev.filter((_, i) => i !== index))
   }
 
+  async function setThumbnailFile(list: FileList | null) {
+    const file = list?.[0]
+    if (!file) return
+    setError(null)
+    if (!file.type.startsWith('image/')) return setError(`${file.name} is not an image.`)
+    if (file.size > MAX_IMAGE_BYTES) return setError(`${file.name} is too large (max ${humanSize(MAX_IMAGE_BYTES)}).`)
+    const data = await fileToBase64(file)
+    setThumbnail({ filename: file.name, mimeType: file.type, data })
+    if (thumbnailInputRef.current) thumbnailInputRef.current.value = ''
+  }
+
   // ---- submit ----
   function handleSubmit(e: FormEvent) {
     e.preventDefault()
@@ -197,9 +225,12 @@ export function SnippetForm({ initial, submitting, submitLabel, onSubmit }: Snip
       seen.add(key)
     }
 
-    const payload: SnippetPayload = {
+    const payload: ShowcasePayload = {
       title: title.trim(),
       description: description.trim() || null,
+      category: category || null,
+      thumbnailMimeType: thumbnail?.mimeType ?? null,
+      thumbnailData: thumbnail?.data ?? null,
       author: author.trim(),
       files: files.map(({ filename, language, content }) => ({
         filename,
@@ -233,10 +264,57 @@ export function SnippetForm({ initial, submitting, submitLabel, onSubmit }: Snip
             id="description"
             value={description}
             onChange={(e) => setDescription(e.target.value)}
-            placeholder="What does this snippet do? How do you use it?"
+            placeholder="What is this? How do you use it?"
             maxLength={5000}
             rows={4}
           />
+        </div>
+
+        <div className="grid gap-5 md:grid-cols-[minmax(0,1fr)_220px]">
+          <div className="space-y-2">
+            <Label>Category</Label>
+            <Select value={category} onValueChange={setCategory}>
+              <SelectTrigger>
+                <SelectValue />
+              </SelectTrigger>
+              <SelectContent>
+                {SHOWCASE_CATEGORIES.map((c) => (
+                  <SelectItem key={c.value} value={c.value}>
+                    {c.label}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+          </div>
+          <div className="space-y-2">
+            <Label>Thumbnail</Label>
+            <input
+              ref={thumbnailInputRef}
+              type="file"
+              accept="image/*"
+              className="hidden"
+              onChange={(e) => void setThumbnailFile(e.target.files)}
+            />
+            <button
+              type="button"
+              onClick={() => thumbnailInputRef.current?.click()}
+              className="group flex h-[118px] w-full items-center justify-center overflow-hidden rounded-lg border border-dashed border-border bg-background text-sm text-muted-foreground transition-colors hover:border-primary/50 hover:text-foreground"
+            >
+              {thumbnail ? (
+                <img src={imageDataUrl(thumbnail.mimeType, thumbnail.data)} alt="" className="h-full w-full object-cover" />
+              ) : (
+                <span className="flex items-center gap-2">
+                  <ImageIcon className="h-4 w-4" />
+                  Add thumbnail
+                </span>
+              )}
+            </button>
+            {thumbnail && (
+              <Button type="button" variant="ghost" size="sm" className="h-7 px-2 text-muted-foreground" onClick={() => setThumbnail(null)}>
+                Remove thumbnail
+              </Button>
+            )}
+          </div>
         </div>
 
         <div className="space-y-2">
@@ -426,6 +504,10 @@ function guessLanguage(filename: string): string {
   const map: Record<string, string> = {
     gs2: 'gs2',
     gs: 'gs1',
+    gani: 'gs2',
+    nw: 'gs2',
+    zelda: 'gs2',
+    graal: 'gs2',
     js: 'javascript',
     jsx: 'javascript',
     mjs: 'javascript',
@@ -448,4 +530,10 @@ function guessLanguage(filename: string): string {
     php: 'php',
   }
   return map[ext] ?? 'gs2'
+}
+
+function isTextFile(file: File): boolean {
+  if (file.type.startsWith('text/')) return true
+  const ext = file.name.split('.').pop()?.toLowerCase() ?? ''
+  return TEXT_FILE_EXTENSIONS.has(ext)
 }

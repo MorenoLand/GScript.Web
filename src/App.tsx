@@ -6,9 +6,9 @@ import { AuthProvider } from '@/hooks/useAuth'
 import { Layout } from '@/components/layout/Layout'
 import { ProtectedRoute } from '@/routes/ProtectedRoute'
 import { GalleryPage } from '@/pages/GalleryPage'
-import { SnippetDetailPage } from '@/pages/SnippetDetailPage'
-import { NewSnippetPage } from '@/pages/NewSnippetPage'
-import { EditSnippetPage } from '@/pages/EditSnippetPage'
+import { ShowcaseDetailPage } from '@/pages/ShowcaseDetailPage'
+import { NewShowcasePage } from '@/pages/NewShowcasePage'
+import { EditShowcasePage } from '@/pages/EditShowcasePage'
 import { LoginPage } from '@/pages/LoginPage'
 import { NotFoundPage } from '@/pages/NotFoundPage'
 
@@ -27,12 +27,12 @@ export default function App() {
             <Routes>
               <Route element={<Layout />}>
                 <Route index element={<GalleryPage />} />
-                <Route path="snippet/:id" element={<SnippetDetailPage />} />
+                <Route path="snippet/:id" element={<ShowcaseDetailPage />} />
                 <Route
                   path="new"
                   element={
                     <ProtectedRoute>
-                      <NewSnippetPage />
+                      <NewShowcasePage />
                     </ProtectedRoute>
                   }
                 />
@@ -40,7 +40,7 @@ export default function App() {
                   path="snippet/:id/edit"
                   element={
                     <ProtectedRoute>
-                      <EditSnippetPage />
+                      <EditShowcasePage />
                     </ProtectedRoute>
                   }
                 />

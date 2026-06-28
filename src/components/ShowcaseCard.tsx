@@ -2,10 +2,12 @@ import { Link } from 'react-router-dom'
 import { FileCode2, ImageIcon, ArrowUpRight } from 'lucide-react'
 import { Badge } from '@/components/ui/badge'
 import { cn } from '@/lib/utils'
-import { formatRelative } from '@/lib/format'
+import { formatRelative, imageDataUrl } from '@/lib/format'
+import { SHOWCASE_CATEGORIES } from '@/lib/constants'
 import type { SnippetListItem } from '@/lib/types'
 
-export function SnippetCard({ snippet }: { snippet: SnippetListItem }) {
+export function ShowcaseCard({ snippet }: { snippet: SnippetListItem }) {
+  const category = SHOWCASE_CATEGORIES.find((c) => c.value === snippet.category)?.label
   return (
     <Link
       to={`/snippet/${snippet.id}`}
@@ -14,6 +16,15 @@ export function SnippetCard({ snippet }: { snippet: SnippetListItem }) {
         'hover:-translate-y-1 hover:border-primary/40 hover:shadow-card',
       )}
     >
+      {snippet.thumbnailData && (
+        <div className="-mx-5 -mt-5 mb-4 aspect-[16/9] overflow-hidden rounded-t-xl border-b border-border bg-muted">
+          <img
+            src={imageDataUrl(snippet.thumbnailMimeType, snippet.thumbnailData)}
+            alt=""
+            className="h-full w-full object-cover transition-transform duration-300 group-hover:scale-[1.03]"
+          />
+        </div>
+      )}
       <div className="mb-2 flex items-start justify-between gap-3">
         <h3 className="line-clamp-2 text-base font-semibold leading-snug text-foreground">
           {snippet.title}
@@ -30,6 +41,9 @@ export function SnippetCard({ snippet }: { snippet: SnippetListItem }) {
       )}
 
       <div className="mt-auto flex flex-wrap items-center gap-2">
+        {category && (
+          <Badge variant="default">{category}</Badge>
+        )}
         {snippet.fileCount > 0 && (
           <Badge variant="muted">
             <FileCode2 className="h-3 w-3" />

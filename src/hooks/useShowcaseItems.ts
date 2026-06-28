@@ -12,9 +12,9 @@ import {
   updateSnippet,
 } from '@/lib/api'
 import { PAGE_SIZE, qk } from '@/lib/constants'
-import type { SnippetPayload } from '@/lib/types'
+import type { ShowcasePayload } from '@/lib/types'
 
-export function useSnippetList(page: number) {
+export function useShowcaseItemList(page: number) {
   const offset = Math.max(0, (page - 1) * PAGE_SIZE)
   return useQuery({
     queryKey: qk.snippets(page),
@@ -24,7 +24,7 @@ export function useSnippetList(page: number) {
   })
 }
 
-export function useSnippet(id: number) {
+export function useShowcaseItem(id: number) {
   return useQuery({
     queryKey: qk.snippet(id),
     queryFn: ({ signal }) => getSnippet(id, signal),
@@ -32,20 +32,20 @@ export function useSnippet(id: number) {
   })
 }
 
-export function useCreateSnippet() {
+export function useCreateShowcaseItem() {
   const qc = useQueryClient()
   return useMutation({
-    mutationFn: (payload: SnippetPayload) => createSnippet(payload),
+    mutationFn: (payload: ShowcasePayload) => createSnippet(payload),
     onSuccess: () => {
       qc.invalidateQueries({ queryKey: ['gs2-snippets'] })
     },
   })
 }
 
-export function useUpdateSnippet(id: number) {
+export function useUpdateShowcaseItem(id: number) {
   const qc = useQueryClient()
   return useMutation({
-    mutationFn: (payload: SnippetPayload) => updateSnippet(id, payload),
+    mutationFn: (payload: ShowcasePayload) => updateSnippet(id, payload),
     onSuccess: () => {
       qc.invalidateQueries({ queryKey: ['gs2-snippets'] })
       qc.invalidateQueries({ queryKey: qk.snippet(id) })
@@ -53,7 +53,7 @@ export function useUpdateSnippet(id: number) {
   })
 }
 
-export function useDeleteSnippet() {
+export function useDeleteShowcaseItem() {
   const qc = useQueryClient()
   return useMutation({
     mutationFn: (id: number) => deleteSnippet(id),

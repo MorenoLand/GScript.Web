@@ -1,13 +1,6 @@
-import type {
-  ListResponse,
-  LoginResponse,
-  SnippetDetail,
-  SnippetPayload,
-} from '@/lib/types'
+import type { ListResponse, SnippetDetail, SnippetPayload } from '@/lib/types'
 
-// Empty base => relative requests (works in dev via the Vite proxy and in prod
-// when served from the same origin as the API). Override with VITE_API_URL.
-const BASE = import.meta.env.VITE_API_URL ?? ''
+const BASE = import.meta.env.VITE_API_URL ?? 'https://api.moreno.land'
 
 export const TOKEN_KEY = 'gs2cb.token'
 
@@ -81,6 +74,7 @@ function extractMessage(data: unknown): string | null {
   if (data && typeof data === 'object') {
     const obj = data as Record<string, unknown>
     if (typeof obj.error === 'string') return obj.error
+    if (typeof obj.detail === 'string') return obj.detail
     if (typeof obj.title === 'string') return obj.title
   }
   if (typeof data === 'string' && data.length) return data
@@ -97,48 +91,45 @@ function safeParse(text: string): unknown {
 
 // ---- Auth ----------------------------------------------------------------
 
-export function login(username: string, password: string) {
-  return request<LoginResponse>('/api/auth/login', {
-    method: 'POST',
-    body: { username, password },
-  })
+export function getDiscordLoginUrl(returnUrl = window.location.href) {
+  return `${BASE}/api/auth/discord/login?returnUrl=${encodeURIComponent(returnUrl)}`
 }
 
 export function getMe() {
-  return request<{ username: string; nickname?: string | null; role?: string }>(
+  return request<{ username: string; nickname?: string | null; avatarUrl?: string | null; avatar_url?: string | null; role?: string; canManageShowcase?: boolean; canPostShowcase?: boolean; isShowcaseBlocked?: boolean }>(
     '/api/auth/user',
   )
 }
 
-// ---- GS2 Codebase --------------------------------------------------------
+// ---- GScript Showcase ----------------------------------------------------
 
 export function listSnippets(limit: number, offset: number, signal?: AbortSignal) {
   return request<ListResponse>(
-    `/api/gs2-codebase/?limit=${limit}&offset=${offset}`,
+    `/api/gscript-showcase?limit=${limit}&offset=${offset}`,
     { signal },
   )
 }
 
 export function getSnippet(id: number, signal?: AbortSignal) {
-  return request<SnippetDetail>(`/api/gs2-codebase/${id}`, { signal })
+  return request<SnippetDetail>(`/api/gscript-showcase/${id}`, { signal })
 }
 
 export function createSnippet(payload: SnippetPayload) {
-  return request<{ success: boolean; id: number }>('/api/gs2-codebase/', {
+  return request<{ success: boolean; id: number }>('/api/gscript-showcase', {
     method: 'POST',
     body: payload,
   })
 }
 
 export function updateSnippet(id: number, payload: SnippetPayload) {
-  return request<{ success: boolean }>(`/api/gs2-codebase/${id}`, {
+  return request<{ success: boolean }>(`/api/gscript-showcase/${id}`, {
     method: 'PUT',
     body: payload,
   })
 }
 
 export function deleteSnippet(id: number) {
-  return request<{ success: boolean }>(`/api/gs2-codebase/${id}`, {
+  return request<{ success: boolean }>(`/api/gscript-showcase/${id}`, {
     method: 'DELETE',
   })
 }
