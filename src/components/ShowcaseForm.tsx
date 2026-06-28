@@ -287,7 +287,10 @@ export function ShowcaseForm({ initial, submitting, submitLabel, onSubmit }: Sho
             </Select>
           </div>
           <div className="space-y-2">
-            <Label>Thumbnail</Label>
+            <div className="flex items-center justify-between gap-3">
+              <Label>Thumbnail</Label>
+              <span className="text-xs text-muted-foreground">Max 512x512 square</span>
+            </div>
             <input
               ref={thumbnailInputRef}
               type="file"

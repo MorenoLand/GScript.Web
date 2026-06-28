@@ -29,6 +29,7 @@ export function GalleryPage() {
   )
   const hasNext = snippets.length === PAGE_SIZE
   const movingSnippets = visibleSnippets.length > 0 ? [...visibleSnippets, ...visibleSnippets] : []
+  const movingRows = visibleSnippets.length >= 6 ? [movingSnippets, [...visibleSnippets].reverse().concat([...visibleSnippets].reverse())] : [movingSnippets]
   const heroWord = heroWords[heroWordIndex]
 
   useEffect(() => {
@@ -87,27 +88,29 @@ export function GalleryPage() {
           </div>
           {movingSnippets.length > 0 && (
             <div className="showcase-rail" aria-label="Recent showcase items">
-              <div className="showcase-rail-track">
-                {movingSnippets.map((snippet, index) => (
-                  <Link
-                    key={`${snippet.id}-${index}`}
-                    to={`/snippet/${snippet.id}`}
-                    className="showcase-rail-card"
-                  >
-                    <span className="showcase-rail-icon">
-                      {snippet.thumbnailData ? (
-                        <img src={`data:${snippet.thumbnailMimeType || 'image/png'};base64,${snippet.thumbnailData}`} alt="" className="h-full w-full rounded-[inherit] object-cover" />
-                      ) : snippet.imageCount > 0 ? <ImageIcon className="h-5 w-5" /> : <Code2 className="h-5 w-5" />}
-                    </span>
-                    <span className="min-w-0 text-left">
-                      <span className="block truncate font-semibold text-foreground">{snippet.title}</span>
-                      <span className="block truncate text-sm text-muted-foreground">
-                        {snippet.author}
+              {movingRows.map((row, rowIndex) => (
+                <div key={rowIndex} className={cn('showcase-rail-track', rowIndex === 1 && 'showcase-rail-track-alt')}>
+                  {row.map((snippet, index) => (
+                    <Link
+                      key={`${rowIndex}-${snippet.id}-${index}`}
+                      to={`/snippet/${snippet.id}`}
+                      className="showcase-rail-card"
+                    >
+                      <span className="showcase-rail-icon">
+                        {snippet.thumbnailData ? (
+                          <img src={`data:${snippet.thumbnailMimeType || 'image/png'};base64,${snippet.thumbnailData}`} alt="" className="h-full w-full rounded-[inherit] object-cover" />
+                        ) : snippet.imageCount > 0 ? <ImageIcon className="h-5 w-5" /> : <Code2 className="h-5 w-5" />}
                       </span>
-                    </span>
-                  </Link>
-                ))}
-              </div>
+                      <span className="min-w-0 text-left">
+                        <span className="block truncate font-semibold text-foreground">{snippet.title}</span>
+                        <span className="block truncate text-sm text-muted-foreground">
+                          {snippet.author}
+                        </span>
+                      </span>
+                    </Link>
+                  ))}
+                </div>
+              ))}
             </div>
           )}
         </div>
