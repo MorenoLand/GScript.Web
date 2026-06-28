@@ -131,6 +131,7 @@
 
   .showcase-page {
     min-height: calc(100vh - 4rem);
+    overflow-x: clip;
     background:
       radial-gradient(circle at 50% 10%, hsl(var(--primary) / 0.12), transparent 24rem),
       linear-gradient(135deg, hsl(38 18% 76% / 0.35) 25%, transparent 25%) 0 0 / 88px 88px,
@@ -148,6 +149,7 @@
 
   .showcase-hero {
     position: relative;
+    overflow-x: clip;
     background:
       radial-gradient(circle at 50% 18%, hsl(var(--primary) / 0.12), transparent 22rem),
       linear-gradient(135deg, hsl(38 18% 76% / 0.35) 25%, transparent 25%) 0 0 / 88px 88px,
@@ -203,7 +205,8 @@
     left: 50%;
     bottom: 1.75rem;
     display: grid;
-    width: 100vw;
+    width: 100dvw;
+    max-width: 100dvw;
     gap: 0.9rem;
     overflow: hidden;
     transform: translateX(-50%);
