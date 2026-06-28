@@ -5,8 +5,10 @@
 // chosen so the shipped oneDark theme colours them (comment/string/number/
 // keyword/constant/function/operator/punctuation). See CodeBlock.tsx.
 
-/* eslint-disable @typescript-eslint/no-explicit-any */
-export const graalscript = function (Prism: any) {
+graalscript.displayName = 'graalscript'
+graalscript.aliases = ['gs2', 'gscript2', 'graal', 'graalscript2', 'gs1', 'gscript']
+
+export function graalscript(Prism: any) {
   Prism.languages.graalscript = {
     comment: [
       { pattern: /\/\/[^\n\r]*/, greedy: true },
@@ -14,7 +16,6 @@ export const graalscript = function (Prism: any) {
       { pattern: /\/\*(?!\*)[\s\S]*?\*\//, greedy: true },
     ],
     string: {
-      // Double-quoted strings; SQL keywords inside are highlighted when present.
       pattern: /"(?:\\.|[^"\\\r\n])*"/,
       greedy: true,
       inside: {
