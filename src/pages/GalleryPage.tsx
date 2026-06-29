@@ -28,8 +28,9 @@ export function GalleryPage() {
     [categoryParam, snippets],
   )
   const hasNext = snippets.length === PAGE_SIZE
-  const movingSnippets = visibleSnippets.length > 0 ? [...visibleSnippets, ...visibleSnippets] : []
-  const movingRows = visibleSnippets.length >= 6 ? [movingSnippets, [...visibleSnippets].reverse().concat([...visibleSnippets].reverse())] : [movingSnippets]
+  const movingSnippets = visibleSnippets.length > 0 ? Array.from({ length: 4 }, () => visibleSnippets).flat() : []
+  const reversedSnippets = [...visibleSnippets].reverse()
+  const movingRows = visibleSnippets.length >= 6 ? [movingSnippets, Array.from({ length: 4 }, () => reversedSnippets).flat()] : [movingSnippets]
   const heroWord = heroWords[heroWordIndex]
 
   useEffect(() => {

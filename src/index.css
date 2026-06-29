@@ -210,7 +210,6 @@
     gap: 0.9rem;
     overflow: hidden;
     transform: translateX(-50%);
-    mask-image: linear-gradient(to right, transparent, black 5rem, black calc(100% - 5rem), transparent);
   }
 
   .showcase-rail-track {
@@ -260,7 +259,7 @@
 
   @keyframes showcase-rail {
     from { transform: translateX(0); }
-    to { transform: translateX(calc(-50% - 0.5rem)); }
+    to { transform: translateX(calc(-25% - 0.5rem)); }
   }
 
   @keyframes showcase-word-flip {
