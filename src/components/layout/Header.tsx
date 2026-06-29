@@ -1,6 +1,6 @@
 import { Link, NavLink, useLocation, useNavigate } from 'react-router-dom'
 import { useEffect, useState } from 'react'
-import { LogOut, Plus, User as UserIcon, ChevronDown, Lightbulb, Settings } from 'lucide-react'
+import { LogOut, Plus, User as UserIcon, ChevronDown, Lightbulb, Settings, MessageCircle } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import {
   DropdownMenu,
@@ -21,6 +21,8 @@ export function Header() {
   const [heroTop, setHeroTop] = useState(() => window.location.pathname === '/' && window.scrollY < 120)
   const [dark, setDark] = useState(() => localStorage.getItem('gscript-showcase-theme') !== 'light')
   const [reducedMotion, setReducedMotion] = useState(() => localStorage.getItem('gscript-showcase-motion') === 'reduced')
+  const [accountOpen, setAccountOpen] = useState(false)
+  const [settingsOpen, setSettingsOpen] = useState(false)
   const hideHeroActions = location.pathname === '/' && heroTop
 
   useEffect(() => {
@@ -51,11 +53,23 @@ export function Header() {
             <img src="/graalicon_big.png" alt="" className="h-8 w-8 object-contain [image-rendering:pixelated]" />
           </span>
           <span className="brand-discord text-[15px] font-semibold tracking-tight">
-            #gscript <span className="text-muted-foreground">showcase</span>
+            #gscript
           </span>
         </Link>
 
         <nav className="flex items-center gap-2">
+          <div className="hidden items-center gap-1 md:flex">
+            <NavLink to="/resources" className={({ isActive }) => cn("rounded-md px-3 py-1.5 text-sm font-medium text-muted-foreground transition-colors hover:bg-accent hover:text-foreground", isActive && "bg-accent text-foreground")}>Resources</NavLink>
+            <Link to="/resources#tools" className={cn("rounded-md px-3 py-1.5 text-sm font-medium text-muted-foreground transition-colors hover:bg-accent hover:text-foreground", location.pathname === '/resources' && location.hash === '#tools' && "bg-accent text-foreground")}>Tools</Link>
+            <a href="https://suite.gscript.dev" className="rounded-md px-3 py-1.5 text-sm font-medium text-muted-foreground transition-colors hover:bg-accent hover:text-foreground">Suite</a>
+            <a href="https://docs.gscript.dev" className="rounded-md px-3 py-1.5 text-sm font-medium text-muted-foreground transition-colors hover:bg-accent hover:text-foreground">Docs</a>
+            <a href="https://wiki.gscript.dev/Creation/Dev/GScript" className="rounded-md px-3 py-1.5 text-sm font-medium text-muted-foreground transition-colors hover:bg-accent hover:text-foreground">Wiki</a>
+            <a href="https://forums.gscript.dev/" className="rounded-md px-3 py-1.5 text-sm font-medium text-muted-foreground transition-colors hover:bg-accent hover:text-foreground">Forums</a>
+            <a href="https://discord.gscript.dev" className="inline-flex items-center gap-1.5 rounded-md px-3 py-1.5 text-sm font-medium text-muted-foreground transition-colors hover:bg-accent hover:text-foreground">
+              <MessageCircle className="h-4 w-4" />
+              Discord
+            </a>
+          </div>
           <span className={cn('flex items-center gap-2 transition-all duration-300 ease-out', hideHeroActions && 'pointer-events-none translate-y-2 opacity-0')}>
             <NavLink
               to="/"
@@ -87,9 +101,9 @@ export function Header() {
           </span>
           {isAuthenticated ? (
             <>
-              <DropdownMenu>
+              <DropdownMenu open={accountOpen} onOpenChange={setAccountOpen}>
                 <DropdownMenuTrigger asChild>
-                  <button className="flex items-center gap-2 rounded-md border border-border px-2.5 py-1.5 text-sm text-foreground transition-colors hover:border-primary/40 hover:bg-accent">
+                  <button onMouseEnter={() => setAccountOpen(true)} className="flex items-center gap-2 rounded-md border border-border px-2.5 py-1.5 text-sm text-foreground transition-colors hover:border-primary/40 hover:bg-accent">
                     {user?.avatarUrl ? (
                       <img src={user.avatarUrl} alt="" className="h-5 w-5 rounded-full object-cover" />
                     ) : (
@@ -101,7 +115,7 @@ export function Header() {
                     <ChevronDown className="h-3.5 w-3.5 opacity-50" />
                   </button>
                 </DropdownMenuTrigger>
-                <DropdownMenuContent align="end">
+                <DropdownMenuContent align="end" onMouseEnter={() => setAccountOpen(true)} onMouseLeave={() => setAccountOpen(false)}>
                   <DropdownMenuLabel>{user?.username}</DropdownMenuLabel>
                   <DropdownMenuSeparator />
                   {canPost && (
@@ -129,17 +143,18 @@ export function Header() {
               <Link to="/login">Sign in</Link>
             </Button>
           )}
-          <DropdownMenu>
+          <DropdownMenu open={settingsOpen} onOpenChange={setSettingsOpen}>
             <DropdownMenuTrigger asChild>
               <button
                 type="button"
+                onMouseEnter={() => setSettingsOpen(true)}
                 className="inline-flex h-8 w-8 items-center justify-center rounded-md border border-border text-muted-foreground transition-colors hover:border-primary/40 hover:bg-accent hover:text-foreground"
                 aria-label="Settings"
               >
                 <Settings className="h-4 w-4" />
               </button>
             </DropdownMenuTrigger>
-            <DropdownMenuContent align="end">
+            <DropdownMenuContent align="end" onMouseEnter={() => setSettingsOpen(true)} onMouseLeave={() => setSettingsOpen(false)}>
               <DropdownMenuLabel>Settings</DropdownMenuLabel>
               <DropdownMenuSeparator />
               <DropdownMenuItem onClick={() => setDark((v) => !v)}>

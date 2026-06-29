@@ -6,7 +6,7 @@ import { getDiscordLoginUrl } from '@/lib/api'
 export function LoginPage() {
   const location = useLocation() as { state?: { from?: string } }
   const from = location.state?.from
-  const returnUrl = new URL(from && from !== '/login' ? from : '/new', window.location.origin).toString()
+  const returnUrl = new URL(from && from !== '/login' ? from : '/', window.location.origin).toString()
 
   return (
     <div className="container flex min-h-[70vh] items-center justify-center py-12">

@@ -10,6 +10,7 @@ import { useShowcaseItemList, PAGE_SIZE } from '@/hooks/useShowcaseItems'
 import { useAuth } from '@/hooks/useAuth'
 import { SHOWCASE_CATEGORIES } from '@/lib/constants'
 import { cn } from '@/lib/utils'
+import { DiscordFloat } from '@/components/DiscordFloat'
 
 const heroWords = ['scripts', 'levels', 'ganis', 'graphics', 'tools', 'weird finds']
 
@@ -64,6 +65,7 @@ export function GalleryPage() {
     <div>
       <section className="showcase-hero border-b border-border">
         <div className="container relative flex min-h-[calc(100vh-4rem)] flex-col items-center justify-center py-16 text-center sm:py-20">
+          <DiscordFloat />
           <div className="showcase-mark" aria-hidden="true">
             <img src="/zelda-character.png" alt="" />
           </div>

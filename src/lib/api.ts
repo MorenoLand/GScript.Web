@@ -4,20 +4,36 @@ const BASE = import.meta.env.VITE_API_URL ?? 'https://api.moreno.land'
 
 export const TOKEN_KEY = 'gs2cb.token'
 
+function cookieDomain() {
+  const host = window.location.hostname
+  return host === 'gscript.dev' || host.endsWith('.gscript.dev') ? '; domain=.gscript.dev; secure' : ''
+}
+
+function readCookie(name: string) {
+  const prefix = `${name}=`
+  return document.cookie.split('; ').find((part) => part.startsWith(prefix))?.slice(prefix.length) ?? null
+}
+
 export function getToken(): string | null {
   try {
-    return localStorage.getItem(TOKEN_KEY)
+    return localStorage.getItem(TOKEN_KEY) || readCookie(TOKEN_KEY)
   } catch {
-    return null
+    return readCookie(TOKEN_KEY)
   }
 }
 
 export function setToken(token: string) {
-  localStorage.setItem(TOKEN_KEY, token)
+  try {
+    localStorage.setItem(TOKEN_KEY, token)
+  } catch {}
+  document.cookie = `${TOKEN_KEY}=${encodeURIComponent(token)}; path=/; max-age=2592000; samesite=lax${cookieDomain()}`
 }
 
 export function clearToken() {
-  localStorage.removeItem(TOKEN_KEY)
+  try {
+    localStorage.removeItem(TOKEN_KEY)
+  } catch {}
+  document.cookie = `${TOKEN_KEY}=; path=/; max-age=0; samesite=lax${cookieDomain()}`
 }
 
 export class ApiError extends Error {
