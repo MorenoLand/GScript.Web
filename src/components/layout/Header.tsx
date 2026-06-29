@@ -30,7 +30,7 @@ export function Header() {
   }
   const closeMenu = (menu: 'account' | 'settings') => {
     if (closeDropdownTimer.current) window.clearTimeout(closeDropdownTimer.current)
-    closeDropdownTimer.current = window.setTimeout(() => setOpenDropdown((open) => open === menu ? null : open), 80)
+    closeDropdownTimer.current = window.setTimeout(() => setOpenDropdown((open) => open === menu ? null : open), 180)
   }
 
   useEffect(() => {
@@ -59,7 +59,7 @@ export function Header() {
   return (
     <header className="sticky top-0 z-40 pt-4">
       <div className="container">
-        <div className="relative flex h-14 items-center justify-between gap-4 rounded-2xl border border-border/70 bg-background/72 px-4 shadow-soft backdrop-blur-xl supports-[backdrop-filter]:bg-background/58">
+        <div className="relative flex h-14 items-center justify-between gap-4 px-4">
         <Link to="/" className="group flex shrink-0 items-center gap-2.5">
           <span className="flex h-8 w-8 items-center justify-center transition-transform group-hover:-translate-y-0.5">
             <img src="/graalicon_big.png" alt="" className="h-8 w-8 object-contain [image-rendering:pixelated]" />
@@ -113,9 +113,9 @@ export function Header() {
           </span>
           {isAuthenticated ? (
             <>
-              <DropdownMenu open={openDropdown === 'account'} onOpenChange={(open) => setOpenDropdown(open ? 'account' : null)}>
+              <DropdownMenu modal={false} open={openDropdown === 'account'} onOpenChange={(open) => setOpenDropdown(open ? 'account' : null)}>
                 <DropdownMenuTrigger asChild>
-                  <button onMouseEnter={() => openMenu('account')} onMouseLeave={() => closeMenu('account')} className="flex items-center gap-2 rounded-md border border-border px-2.5 py-1.5 text-sm text-foreground transition-colors hover:border-primary/40 hover:bg-accent">
+                  <button onPointerEnter={() => openMenu('account')} onPointerLeave={() => closeMenu('account')} className="flex items-center gap-2 rounded-md px-2.5 py-1.5 text-sm text-foreground transition-colors hover:bg-accent focus:outline-none focus-visible:ring-1 focus-visible:ring-primary/40">
                     {user?.avatarUrl ? (
                       <img src={user.avatarUrl} alt="" className="h-5 w-5 rounded-full object-cover" />
                     ) : (
@@ -127,7 +127,7 @@ export function Header() {
                     <ChevronDown className="h-3.5 w-3.5 opacity-50" />
                   </button>
                 </DropdownMenuTrigger>
-                <DropdownMenuContent align="end" onMouseEnter={() => openMenu('account')} onMouseLeave={() => closeMenu('account')}>
+            <DropdownMenuContent align="end" sideOffset={0} onPointerEnter={() => openMenu('account')} onPointerLeave={() => closeMenu('account')}>
                   {canPost && (
                     <>
                       <DropdownMenuItem onClick={() => navigate('/new')}>
@@ -155,19 +155,19 @@ export function Header() {
               </Button>
             </span>
           )}
-          <DropdownMenu open={openDropdown === 'settings'} onOpenChange={(open) => setOpenDropdown(open ? 'settings' : null)}>
+          <DropdownMenu modal={false} open={openDropdown === 'settings'} onOpenChange={(open) => setOpenDropdown(open ? 'settings' : null)}>
             <DropdownMenuTrigger asChild>
               <button
                 type="button"
-                onMouseEnter={() => openMenu('settings')}
-                onMouseLeave={() => closeMenu('settings')}
-                className="inline-flex h-8 w-8 items-center justify-center rounded-md border border-border text-muted-foreground transition-colors hover:border-primary/40 hover:bg-accent hover:text-foreground"
+                onPointerEnter={() => openMenu('settings')}
+                onPointerLeave={() => closeMenu('settings')}
+                className="inline-flex h-8 w-8 items-center justify-center rounded-md text-muted-foreground transition-colors hover:bg-accent hover:text-foreground focus:outline-none focus-visible:ring-1 focus-visible:ring-primary/40"
                 aria-label="Settings"
               >
                 <Settings className="h-4 w-4" />
               </button>
             </DropdownMenuTrigger>
-            <DropdownMenuContent align="end" onMouseEnter={() => openMenu('settings')} onMouseLeave={() => closeMenu('settings')}>
+            <DropdownMenuContent align="end" sideOffset={0} onPointerEnter={() => openMenu('settings')} onPointerLeave={() => closeMenu('settings')}>
               <DropdownMenuLabel>Settings</DropdownMenuLabel>
               <DropdownMenuSeparator />
               <DropdownMenuItem onClick={() => setDark((v) => !v)}>

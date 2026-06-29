@@ -17,7 +17,7 @@ export function NewShowcasePage() {
 
   if (!canPost) {
     return (
-      <div className="showcase-page">
+      <div className="showcase-page showcase-page-under-header">
         <div className="container py-10">
           <EmptyState title="Posting disabled" description="This Discord account cannot publish showcase items." />
         </div>
@@ -36,7 +36,7 @@ export function NewShowcasePage() {
   }
 
   return (
-    <div className="showcase-page">
+    <div className="showcase-page showcase-page-under-header">
       <div className="container py-10">
         <div className="mx-auto max-w-4xl">
         <Button asChild variant="ghost" size="sm" className="mb-5 -ml-2">

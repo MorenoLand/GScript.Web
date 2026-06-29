@@ -1,6 +1,8 @@
 import { Link } from 'react-router-dom'
 
 export function Footer() {
+  const scrollHomeTop = () => window.requestAnimationFrame(() => window.scrollTo({ top: 0, behavior: 'smooth' }))
+
   return (
     <footer className="mt-20 border-t border-border">
       <div className="container flex flex-col items-center justify-between gap-2 py-7 text-sm text-muted-foreground sm:flex-row">
@@ -16,7 +18,7 @@ export function Footer() {
             resources
           </Link>
           <span className="text-border">|</span>
-          <Link to="/" className="hover:text-primary">
+          <Link to="/" onClick={scrollHomeTop} className="hover:text-primary">
             home
           </Link>
         </p>
