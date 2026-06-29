@@ -84,7 +84,7 @@ export function GalleryPage() {
             </Button>
             <Button asChild size="lg" variant="outline" className="gap-2">
               <Link to={isAuthenticated ? '/new' : '/login'}>
-                Publish
+                {isAuthenticated ? 'Publish' : 'Sign in'}
                 <Plus className="h-4 w-4" />
               </Link>
             </Button>

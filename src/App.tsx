@@ -22,12 +22,14 @@ const queryClient = new QueryClient({
 })
 
 const legacyQueries = new Set(['beautify', 'byte', 'changes', 'docs', 'formats', 'graph', 'gsdoc', 'indexing', 'list', 'logo'])
+const legacyDocsHost = 'docs.gscript.dev'
 const legacyBotAdminRole = '1441076653852725420'
 const legacyBotEditorRole = '1440497287427129414'
 
 function getLegacySrc() {
   const search = window.location.search
   const hash = decodeURIComponent(window.location.hash.slice(1)).trim()
+  if (window.location.hostname === legacyDocsHost) return 'docs'
   if (!search.startsWith('?')) return hash && hash.toLowerCase() !== 'browse' ? 'docs' : ''
   const key = search.slice(1).split('&')[0].split('=')[0].toLowerCase()
   return legacyQueries.has(key) ? key : ''
@@ -65,9 +67,9 @@ function LegacyPage({ route }: { route: string }) {
     }
     localStorage.setItem('gscript_discord_auth', JSON.stringify(authUser))
     localStorage.setItem('gs2cb.user', JSON.stringify(reactUser))
-    window.history.replaceState(null, '', `${window.location.pathname}${window.location.search || (route === 'docs' ? '?docs' : '')}`)
+    window.history.replaceState(null, '', `${window.location.pathname}${window.location.search || (route === 'docs' && window.location.hostname !== legacyDocsHost ? '?docs' : '')}`)
   }
-  if (route === 'docs' && !window.location.search) window.history.replaceState(null, '', `?docs${window.location.hash}`)
+  if (route === 'docs' && !window.location.search && window.location.hostname !== legacyDocsHost) window.history.replaceState(null, '', `?docs${window.location.hash}`)
   const html = legacyHtmlSource.replace('<head>', '<head><base href="/">')
   document.open()
   document.write(html)

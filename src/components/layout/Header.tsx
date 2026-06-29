@@ -48,7 +48,7 @@ export function Header() {
     <header className="sticky top-0 z-40 pt-4">
       <div className="container">
         <div className="relative flex h-14 items-center justify-between gap-4 rounded-2xl border border-border/70 bg-background/72 px-4 shadow-soft backdrop-blur-xl supports-[backdrop-filter]:bg-background/58">
-        <Link to="/" className="group flex items-center gap-2.5">
+        <Link to="/" className="group flex shrink-0 items-center gap-2.5">
           <span className="flex h-8 w-8 items-center justify-center transition-transform group-hover:-translate-y-0.5">
             <img src="/graalicon_big.png" alt="" className="h-8 w-8 object-contain [image-rendering:pixelated]" />
           </span>
@@ -57,7 +57,7 @@ export function Header() {
           </span>
         </Link>
 
-        <div className="absolute left-1/2 hidden -translate-x-1/2 items-center gap-1 md:flex">
+        <div className="hidden min-w-0 flex-1 items-center justify-center gap-1 lg:flex">
             <NavLink to="/resources" className={({ isActive }) => cn("rounded-md px-3 py-1.5 text-sm font-medium text-muted-foreground transition-colors hover:bg-accent hover:text-foreground", isActive && "bg-accent text-foreground")}>Resources</NavLink>
             <Link to="/resources#tools" className={cn("rounded-md px-3 py-1.5 text-sm font-medium text-muted-foreground transition-colors hover:bg-accent hover:text-foreground", location.pathname === '/resources' && location.hash === '#tools' && "bg-accent text-foreground")}>Tools</Link>
             <a href="https://suite.gscript.dev" className="rounded-md px-3 py-1.5 text-sm font-medium text-muted-foreground transition-colors hover:bg-accent hover:text-foreground">Suite</a>
@@ -69,7 +69,7 @@ export function Header() {
               Discord
             </a>
         </div>
-        <nav className="ml-auto flex items-center gap-2">
+        <nav className="ml-auto flex shrink-0 items-center gap-2">
           <span className={cn('flex items-center gap-2 transition-all duration-300 ease-out', hideHeroActions && 'pointer-events-none translate-y-2 opacity-0')}>
             <NavLink
               to="/"
