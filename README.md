@@ -1,16 +1,23 @@
-# #gscript showcase
+# #gscript
 
-React 19 + TypeScript + Vite front-end for the #gscript showcase.
+React 19 + TypeScript + Vite front-end for `gscript.dev`.
 
-The site is a public gallery for scripts, levels, ganis, graphics, tools, and other #gscript resources. Discord OAuth is used for publishing and account controls through `Moreno.API`.
+The site hosts the #gscript landing page, resource links, showcase/gallery publishing, and legacy tool pages. Discord OAuth is used for publishing and account controls through `Moreno.API`.
+
+Repository: https://github.com/MorenoLand/GScript.Web
 
 ## Routes
 
-- `/` - landing page and latest showcase items
+- `/` - landing page, Discord presence, latest showcase items, and main navigation
+- `/resources` - resource archive for docs, tools, assets, downloads, and videos
 - `/snippet/:id` - showcase item details, attached files, images, and downloads
 - `/new` - publish a showcase item
 - `/snippet/:id/edit` - edit an item
 - `/login` - Discord OAuth login
+- `?docs` - GScript documentation
+- `?formats` - file format notes
+- `?indexing` - graphics indexing guides
+- `?beautify`, `?byte`, `?list`, `?graph`, `?changes` - legacy web tools
 
 ## Local
 
