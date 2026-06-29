@@ -1,5 +1,5 @@
 import { Link, NavLink, useLocation, useNavigate } from 'react-router-dom'
-import { useEffect, useState } from 'react'
+import { useEffect, useRef, useState } from 'react'
 import { LogOut, Plus, User as UserIcon, ChevronDown, Lightbulb, Settings, MessageCircle } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import {
@@ -21,9 +21,17 @@ export function Header() {
   const [heroTop, setHeroTop] = useState(() => window.location.pathname === '/' && window.scrollY < 120)
   const [dark, setDark] = useState(() => localStorage.getItem('gscript-showcase-theme') !== 'light')
   const [reducedMotion, setReducedMotion] = useState(() => localStorage.getItem('gscript-showcase-motion') === 'reduced')
-  const [accountOpen, setAccountOpen] = useState(false)
-  const [settingsOpen, setSettingsOpen] = useState(false)
+  const [openDropdown, setOpenDropdown] = useState<'account' | 'settings' | null>(null)
+  const closeDropdownTimer = useRef<number | null>(null)
   const hideHeroActions = location.pathname === '/' && heroTop
+  const openMenu = (menu: 'account' | 'settings') => {
+    if (closeDropdownTimer.current) window.clearTimeout(closeDropdownTimer.current)
+    setOpenDropdown(menu)
+  }
+  const closeMenu = (menu: 'account' | 'settings') => {
+    if (closeDropdownTimer.current) window.clearTimeout(closeDropdownTimer.current)
+    closeDropdownTimer.current = window.setTimeout(() => setOpenDropdown((open) => open === menu ? null : open), 80)
+  }
 
   useEffect(() => {
     document.documentElement.classList.toggle('dark', dark)
@@ -44,6 +52,10 @@ export function Header() {
     return () => window.removeEventListener('scroll', syncHeroTop)
   }, [location.pathname])
 
+  useEffect(() => () => {
+    if (closeDropdownTimer.current) window.clearTimeout(closeDropdownTimer.current)
+  }, [])
+
   return (
     <header className="sticky top-0 z-40 pt-4">
       <div className="container">
@@ -58,13 +70,13 @@ export function Header() {
         </Link>
 
         <div className="hidden min-w-0 flex-1 items-center justify-center gap-1 lg:flex">
-            <Link to="/resources" className={cn("rounded-md px-3 py-1.5 text-sm font-medium text-muted-foreground transition-colors hover:bg-accent hover:text-foreground", location.pathname === '/resources' && !location.hash && "bg-accent text-foreground")}>Resources</Link>
-            <Link to="/resources#tools" className={cn("rounded-md px-3 py-1.5 text-sm font-medium text-muted-foreground transition-colors hover:bg-accent hover:text-foreground", location.pathname === '/resources' && location.hash === '#tools' && "bg-accent text-foreground")}>Tools</Link>
-            <a href="https://suite.gscript.dev" className="rounded-md px-3 py-1.5 text-sm font-medium text-muted-foreground transition-colors hover:bg-accent hover:text-foreground">Suite</a>
-            <a href="https://docs.gscript.dev" className="rounded-md px-3 py-1.5 text-sm font-medium text-muted-foreground transition-colors hover:bg-accent hover:text-foreground">Docs</a>
-            <a href="https://wiki.gscript.dev/Creation/Dev/GScript" className="rounded-md px-3 py-1.5 text-sm font-medium text-muted-foreground transition-colors hover:bg-accent hover:text-foreground">Wiki</a>
-            <a href="https://forums.gscript.dev/" className="rounded-md px-3 py-1.5 text-sm font-medium text-muted-foreground transition-colors hover:bg-accent hover:text-foreground">Forums</a>
-            <a href="https://discord.gscript.dev" className="inline-flex items-center gap-1.5 rounded-md px-3 py-1.5 text-sm font-medium text-muted-foreground transition-colors hover:bg-accent hover:text-foreground">
+            <Link to="/resources" className={cn("rounded-md px-3 py-1.5 text-[15px] font-medium text-muted-foreground transition-colors hover:bg-accent hover:text-foreground", location.pathname === '/resources' && !location.hash && "bg-accent text-foreground")}>Resources</Link>
+            <Link to="/resources#tools" className={cn("rounded-md px-3 py-1.5 text-[15px] font-medium text-muted-foreground transition-colors hover:bg-accent hover:text-foreground", location.pathname === '/resources' && location.hash === '#tools' && "bg-accent text-foreground")}>Tools</Link>
+            <a href="https://suite.gscript.dev" className="rounded-md px-3 py-1.5 text-[15px] font-medium text-muted-foreground transition-colors hover:bg-accent hover:text-foreground">Suite</a>
+            <a href="https://docs.gscript.dev" className="rounded-md px-3 py-1.5 text-[15px] font-medium text-muted-foreground transition-colors hover:bg-accent hover:text-foreground">Docs</a>
+            <a href="https://wiki.gscript.dev/Creation/Dev/GScript" className="rounded-md px-3 py-1.5 text-[15px] font-medium text-muted-foreground transition-colors hover:bg-accent hover:text-foreground">Wiki</a>
+            <a href="https://forums.gscript.dev/" className="rounded-md px-3 py-1.5 text-[15px] font-medium text-muted-foreground transition-colors hover:bg-accent hover:text-foreground">Forums</a>
+            <a href="https://discord.gscript.dev" className="inline-flex items-center gap-1.5 rounded-md px-3 py-1.5 text-[15px] font-medium text-muted-foreground transition-colors hover:bg-accent hover:text-foreground">
               <MessageCircle className="h-4 w-4" />
               Discord
             </a>
@@ -76,7 +88,7 @@ export function Header() {
               end
               className={({ isActive }) =>
                 cn(
-                  'hidden rounded-md px-3 py-1.5 text-sm font-medium transition-colors sm:inline-flex',
+                  'hidden rounded-md px-3 py-1.5 text-[15px] font-medium transition-colors sm:inline-flex',
                   isActive ? 'text-foreground' : 'text-muted-foreground hover:text-foreground',
                 )
               }
@@ -101,9 +113,9 @@ export function Header() {
           </span>
           {isAuthenticated ? (
             <>
-              <DropdownMenu open={accountOpen} onOpenChange={setAccountOpen}>
+              <DropdownMenu open={openDropdown === 'account'} onOpenChange={(open) => setOpenDropdown(open ? 'account' : null)}>
                 <DropdownMenuTrigger asChild>
-                  <button onMouseEnter={() => setAccountOpen(true)} className="flex items-center gap-2 rounded-md border border-border px-2.5 py-1.5 text-sm text-foreground transition-colors hover:border-primary/40 hover:bg-accent">
+                  <button onMouseEnter={() => openMenu('account')} onMouseLeave={() => closeMenu('account')} className="flex items-center gap-2 rounded-md border border-border px-2.5 py-1.5 text-sm text-foreground transition-colors hover:border-primary/40 hover:bg-accent">
                     {user?.avatarUrl ? (
                       <img src={user.avatarUrl} alt="" className="h-5 w-5 rounded-full object-cover" />
                     ) : (
@@ -115,7 +127,7 @@ export function Header() {
                     <ChevronDown className="h-3.5 w-3.5 opacity-50" />
                   </button>
                 </DropdownMenuTrigger>
-                <DropdownMenuContent align="end" onMouseEnter={() => setAccountOpen(true)} onMouseLeave={() => setAccountOpen(false)}>
+                <DropdownMenuContent align="end" onMouseEnter={() => openMenu('account')} onMouseLeave={() => closeMenu('account')}>
                   {canPost && (
                     <>
                       <DropdownMenuItem onClick={() => navigate('/new')}>
@@ -143,18 +155,19 @@ export function Header() {
               </Button>
             </span>
           )}
-          <DropdownMenu open={settingsOpen} onOpenChange={setSettingsOpen}>
+          <DropdownMenu open={openDropdown === 'settings'} onOpenChange={(open) => setOpenDropdown(open ? 'settings' : null)}>
             <DropdownMenuTrigger asChild>
               <button
                 type="button"
-                onMouseEnter={() => setSettingsOpen(true)}
+                onMouseEnter={() => openMenu('settings')}
+                onMouseLeave={() => closeMenu('settings')}
                 className="inline-flex h-8 w-8 items-center justify-center rounded-md border border-border text-muted-foreground transition-colors hover:border-primary/40 hover:bg-accent hover:text-foreground"
                 aria-label="Settings"
               >
                 <Settings className="h-4 w-4" />
               </button>
             </DropdownMenuTrigger>
-            <DropdownMenuContent align="end" onMouseEnter={() => setSettingsOpen(true)} onMouseLeave={() => setSettingsOpen(false)}>
+            <DropdownMenuContent align="end" onMouseEnter={() => openMenu('settings')} onMouseLeave={() => closeMenu('settings')}>
               <DropdownMenuLabel>Settings</DropdownMenuLabel>
               <DropdownMenuSeparator />
               <DropdownMenuItem onClick={() => setDark((v) => !v)}>

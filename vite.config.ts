@@ -1,10 +1,20 @@
 import { defineConfig } from 'vite'
 import react from '@vitejs/plugin-react'
 import path from 'node:path'
+import fs from 'node:fs'
+
+function legacyDocsHtml() {
+  return {
+    name: 'legacy-docs-html',
+    closeBundle() {
+      fs.copyFileSync(path.resolve(__dirname, 'src/legacy/legacy.html'), path.resolve(__dirname, 'dist/docs.html'))
+    },
+  }
+}
 
 // https://vite.dev/config/
 export default defineConfig({
-  plugins: [react()],
+  plugins: [react(), legacyDocsHtml()],
   resolve: {
     alias: {
       '@': path.resolve(__dirname, './src'),

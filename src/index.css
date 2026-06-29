@@ -468,7 +468,7 @@
   .video-link-grid a:nth-child(even){background:rgba(255,255,255,0.018);}
   .video-link-grid a:hover{background:rgba(255,215,91,0.08);color:#fff;border-color:rgba(245,212,106,0.22);padding-left:22px;text-decoration:none;}
 
-  .discord-member{position:absolute;top:var(--float-top);display:flex;align-items:center;width:max-content;max-width:13rem;padding:5px 8px;border-radius:999px;background:transparent!important;color:hsl(var(--foreground));font-size:16px;pointer-events:none;will-change:transform,opacity,filter;animation:discordFloatMember var(--float-duration) linear infinite;animation-delay:var(--float-delay);opacity:0;}
+  .discord-member{position:absolute;top:var(--float-top);display:flex;align-items:center;width:max-content;max-width:13rem;padding:5px 8px;border-radius:999px;background:transparent!important;color:hsl(var(--foreground));font-family:'Tempus Sans ITC','Palatino Linotype',Georgia,serif;font-size:16px;pointer-events:none;will-change:transform,opacity,filter;animation:discordFloatMember var(--float-duration) linear infinite;animation-delay:var(--float-delay);opacity:0;}
   .discord-float-left .discord-member{left:0;}
   .discord-float-right .discord-member{right:0;left:auto;}
   .discord-member span{white-space:nowrap;color:hsl(var(--foreground) / 0.68);text-shadow:0 2px 8px rgba(0,0,0,0.8),0 0 10px rgba(110,154,255,0.12);}
@@ -476,7 +476,7 @@
   .discord-float-title,.discord-float>a{display:none;}
   .discord-hover{position:fixed;z-index:9999;background:transparent;border:none;padding:0;display:flex;align-items:center;gap:10px;pointer-events:none;box-shadow:none;animation:discordHoverIn 0.15s ease-out;}
   .discord-hover-avatar{width:44px;height:44px;border-radius:50%;border:none;box-shadow:0 4px 12px rgba(0,0,0,0.45);}
-  .discord-hover-name{color:#40ff40;font-size:0.9em;font-weight:600;text-shadow:0 2px 8px rgba(0,0,0,1),0 0 10px rgba(64,255,64,0.35);}
+  .discord-hover-name{color:#40ff40;font-family:'Tempus Sans ITC','Palatino Linotype',Georgia,serif;font-size:0.9em;font-weight:600;text-shadow:0 2px 8px rgba(0,0,0,1),0 0 10px rgba(64,255,64,0.35);}
   @keyframes discordFloatMember{0%{opacity:0;transform:translate3d(var(--float-x),22px,0) scale(0.9);filter:blur(1px) brightness(0.76) drop-shadow(0 5px 10px rgba(0,0,0,0.34));}12%,82%{opacity:0.58;filter:blur(0) brightness(0.9) drop-shadow(0 5px 10px rgba(0,0,0,0.34));}50%{transform:translate3d(calc(var(--float-x) * 0.55),-4px,0) scale(0.98);}100%{opacity:0;transform:translate3d(var(--float-x),-26px,0) scale(0.9);filter:blur(1px) brightness(0.76) drop-shadow(0 5px 10px rgba(0,0,0,0.34));}}
   @keyframes discordHoverIn{from{opacity:0;transform:translateY(4px) scale(0.96);}to{opacity:1;transform:translateY(0) scale(1);}}
 
