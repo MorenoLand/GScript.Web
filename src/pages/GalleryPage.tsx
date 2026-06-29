@@ -63,7 +63,7 @@ export function GalleryPage() {
   return (
     <div>
       <section className="showcase-hero border-b border-border">
-        <div className="container relative flex min-h-[calc(100vh-4rem)] flex-col items-center justify-center overflow-hidden py-16 text-center sm:py-20">
+        <div className="container relative flex min-h-[calc(100vh-4rem)] flex-col items-center justify-center py-16 text-center sm:py-20">
           <div className="showcase-mark" aria-hidden="true">
             <img src="/zelda-character.png" alt="" />
           </div>

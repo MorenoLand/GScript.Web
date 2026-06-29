@@ -149,6 +149,8 @@
 
   .showcase-hero {
     position: relative;
+    margin-top: -4.5rem;
+    padding-top: 4.5rem;
     overflow-x: clip;
     background:
       radial-gradient(circle at 50% 18%, hsl(var(--primary) / 0.12), transparent 22rem),
