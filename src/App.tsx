@@ -30,7 +30,7 @@ function getLegacySrc() {
   const search = window.location.search
   const hash = decodeURIComponent(window.location.hash.slice(1)).trim()
   if (window.location.hostname === legacyDocsHost) return 'docs'
-  if (!search.startsWith('?')) return hash && hash.toLowerCase() !== 'browse' ? 'docs' : ''
+  if (!search.startsWith('?')) return window.location.pathname === '/' && hash && hash.toLowerCase() !== 'browse' ? 'docs' : ''
   const key = search.slice(1).split('&')[0].split('=')[0].toLowerCase()
   return legacyQueries.has(key) ? key : ''
 }

@@ -12,7 +12,7 @@ import { SHOWCASE_CATEGORIES } from '@/lib/constants'
 import { cn } from '@/lib/utils'
 import { DiscordFloat } from '@/components/DiscordFloat'
 
-const heroWords = ['scripts', 'levels', 'ganis', 'graphics', 'tools', 'weird finds']
+const heroWords = ['scripts', 'levels', 'ganis', 'graphics', 'tools', 'developers']
 
 export function GalleryPage() {
   const [searchParams, setSearchParams] = useSearchParams()
@@ -69,8 +69,8 @@ export function GalleryPage() {
           <div className="showcase-mark" aria-hidden="true">
             <img src="/zelda-character.png" alt="" />
           </div>
-          <h1 className="mx-auto max-w-5xl text-balance text-5xl font-semibold tracking-tight sm:text-6xl lg:text-7xl">
-            Built for <span key={heroWord} className="showcase-hero-word">{heroWord}</span>.
+          <h1 className="mx-auto max-w-5xl text-balance text-5xl font-semibold tracking-tight sm:text-6xl lg:text-7xl" style={{ fontFamily: "'Tempus Sans ITC', 'Palatino Linotype', Georgia, serif" }}>
+            Built for <span key={heroWord} className="showcase-hero-word" style={{ fontFamily: "'Tempus Sans ITC', 'Palatino Linotype', Georgia, serif" }}>{heroWord}</span>.
           </h1>
           <p className="mx-auto mt-5 max-w-2xl text-balance text-base leading-relaxed text-muted-foreground sm:text-xl">
             Scripts, levels, ganis, graphics, tools, and odd little discoveries from the #gscript crew.

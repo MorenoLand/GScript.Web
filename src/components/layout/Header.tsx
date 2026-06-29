@@ -58,7 +58,7 @@ export function Header() {
         </Link>
 
         <div className="hidden min-w-0 flex-1 items-center justify-center gap-1 lg:flex">
-            <NavLink to="/resources" className={({ isActive }) => cn("rounded-md px-3 py-1.5 text-sm font-medium text-muted-foreground transition-colors hover:bg-accent hover:text-foreground", isActive && "bg-accent text-foreground")}>Resources</NavLink>
+            <Link to="/resources" className={cn("rounded-md px-3 py-1.5 text-sm font-medium text-muted-foreground transition-colors hover:bg-accent hover:text-foreground", location.pathname === '/resources' && !location.hash && "bg-accent text-foreground")}>Resources</Link>
             <Link to="/resources#tools" className={cn("rounded-md px-3 py-1.5 text-sm font-medium text-muted-foreground transition-colors hover:bg-accent hover:text-foreground", location.pathname === '/resources' && location.hash === '#tools' && "bg-accent text-foreground")}>Tools</Link>
             <a href="https://suite.gscript.dev" className="rounded-md px-3 py-1.5 text-sm font-medium text-muted-foreground transition-colors hover:bg-accent hover:text-foreground">Suite</a>
             <a href="https://docs.gscript.dev" className="rounded-md px-3 py-1.5 text-sm font-medium text-muted-foreground transition-colors hover:bg-accent hover:text-foreground">Docs</a>
@@ -116,8 +116,6 @@ export function Header() {
                   </button>
                 </DropdownMenuTrigger>
                 <DropdownMenuContent align="end" onMouseEnter={() => setAccountOpen(true)} onMouseLeave={() => setAccountOpen(false)}>
-                  <DropdownMenuLabel>{user?.username}</DropdownMenuLabel>
-                  <DropdownMenuSeparator />
                   {canPost && (
                     <>
                       <DropdownMenuItem onClick={() => navigate('/new')}>
