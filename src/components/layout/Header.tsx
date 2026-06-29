@@ -139,9 +139,11 @@ export function Header() {
               </DropdownMenu>
             </>
           ) : (
-            <Button asChild size="sm" variant="outline">
-              <Link to="/login">Sign in</Link>
-            </Button>
+            <span className={cn('transition-all duration-300 ease-out', hideHeroActions && 'pointer-events-none translate-y-2 opacity-0')}>
+              <Button asChild size="sm" variant="outline">
+                <Link to="/login">Sign in</Link>
+              </Button>
+            </span>
           )}
           <DropdownMenu open={settingsOpen} onOpenChange={setSettingsOpen}>
             <DropdownMenuTrigger asChild>
