@@ -61,6 +61,7 @@
     const script = document.createElement('script');
     script.src = src;
     script.async = false;
+    script.onload = () => window.dispatchEvent(new CustomEvent('legacy-script-loaded', { detail: src }));
     attrs.replace(/(\w+)="([^"]*)"/g, (_, name, value) => script.setAttribute(name, value));
     document.head.appendChild(script);
   }
@@ -670,6 +671,7 @@ function App() {
     return params.has('byte') || window.location.hostname === 'byte.gscript.dev';
   });
   const [showDocs, setShowDocs] = useState(() => new URLSearchParams(window.location.search).has('docs') || window.location.hostname === 'docs.gscript.dev');
+  const [legacyReady, setLegacyReady] = useState(0);
   const [isStatsDomain, setIsStatsDomain] = useState(() => window.location.hostname === 'stats.gscript.dev' || window.location.hostname === 'gstats.moreno.land');
   const [statsView, setStatsView] = useState(() => {
     const params = new URLSearchParams(window.location.search);
@@ -788,6 +790,12 @@ function App() {
   }, [videoPlayer]);
 
   useEffect(() => {
+    const handleLegacyScriptLoaded = () => setLegacyReady(value => value + 1);
+    window.addEventListener('legacy-script-loaded', handleLegacyScriptLoaded);
+    return () => window.removeEventListener('legacy-script-loaded', handleLegacyScriptLoaded);
+  }, []);
+
+  useEffect(() => {
     const handlePopState = () => {
       const params = new URLSearchParams(window.location.search);
       setShowIndexing(params.has('indexing'));
@@ -869,7 +877,7 @@ function App() {
         <ChangesView allServers={allServers} changesData={changesData} setChangesData={setChangesData} timestamps={timestamps} setTimestamps={setTimestamps} filteredServer={filteredServer} setFilteredServer={setFilteredServer} changesPage={changesPage} setChangesPage={setChangesPage} changesPerPage={changesPerPage} setChangesPerPage={setChangesPerPage} changesCache={changesCache} loading={loading} setLoading={setLoading} />
       ) : (
           showIndexing ? React.createElement(React.Fragment, null, React.createElement('div', { style: { position: 'fixed', top: '20px', left: '20px', zIndex: 1000 } }, React.createElement('a', { href: '/', onClick: (e) => { e.preventDefault(); setShowIndexing(false); goLegacyBack(); setTimeout(() => { if (typeof initMenus === 'function') initMenus(); }, 100); }, style: { fontSize: '16px', color: '#40ff40', cursor: 'pointer' } }, React.createElement('i', { className: 'fas fa-arrow-left' }), ' Back')), typeof IndexingTutorial !== 'undefined' ? React.createElement(IndexingTutorial) : null) :
-          showFormats ? React.createElement(React.Fragment, null, React.createElement('div', { style: { position: 'fixed', top: '20px', left: '20px', zIndex: 1000 } }, React.createElement('a', { href: '/', onClick: (e) => { e.preventDefault(); setShowFormats(false); goLegacyBack(); setTimeout(() => { if (typeof initMenus === 'function') initMenus(); }, 100); }, style: { fontSize: '16px', color: '#40ff40', cursor: 'pointer' } }, React.createElement('i', { className: 'fas fa-arrow-left' }), ' Back')), typeof FileFormatsGuide !== 'undefined' ? React.createElement(FileFormatsGuide) : null) :
+          showFormats ? React.createElement(React.Fragment, { key: legacyReady }, React.createElement('div', { style: { position: 'fixed', top: '20px', left: '20px', zIndex: 1000 } }, React.createElement('a', { href: '/', onClick: (e) => { e.preventDefault(); setShowFormats(false); goLegacyBack(); setTimeout(() => { if (typeof initMenus === 'function') initMenus(); }, 100); }, style: { fontSize: '16px', color: '#40ff40', cursor: 'pointer' } }, React.createElement('i', { className: 'fas fa-arrow-left' }), ' Back')), typeof FileFormatsGuide !== 'undefined' ? React.createElement(FileFormatsGuide) : null) :
           showBeautify ? React.createElement(React.Fragment, null, React.createElement('div', { style: { position: 'fixed', top: '20px', left: '20px', zIndex: 1000 } }, React.createElement('a', { href: '/', onClick: (e) => { e.preventDefault(); setShowBeautify(false); goLegacyBack(); setTimeout(() => { if (typeof initMenus === 'function') initMenus(); }, 100); }, style: { fontSize: '16px', color: '#40ff40', cursor: 'pointer' } }, React.createElement('i', { className: 'fas fa-arrow-left' }), ' Back')), typeof BeautifyTool !== 'undefined' ? React.createElement(BeautifyTool) : null) :
           showByte ? React.createElement(React.Fragment, null, React.createElement('div', { style: { position: 'fixed', top: '20px', left: '20px', zIndex: 1000 } }, React.createElement('a', { href: '/', onClick: (e) => { e.preventDefault(); setShowByte(false); goLegacyBack(); setTimeout(() => { if (typeof initMenus === 'function') initMenus(); }, 100); }, style: { fontSize: '16px', color: '#40ff40', cursor: 'pointer' } }, React.createElement('i', { className: 'fas fa-arrow-left' }), ' Back')), React.createElement(BytecodeConverter)) :
           showDocs ? React.createElement(React.Fragment, null, typeof GSDoc !== 'undefined' ? React.createElement(GSDoc) : null) :
