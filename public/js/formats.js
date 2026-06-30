@@ -96,6 +96,22 @@ const fileFormatTabs = [
         note: 'Suite reads WIDTH, HEIGHT, TILESET, and LEVELNAMES. The grid rows are comma-separated filenames.'
       },
       {
+        title: 'Generated map metadata',
+        rows: [
+          ['GENERATED filename', 'Marks the generated/output level name used by old generated maps.'],
+          ['GENSEED value', 'Seed for generated terrain.'],
+          ['GENBASE / GENHEIGHT / GENCHAOS', 'Generator controls stored as numeric values.'],
+          ['GENEVENBORDERS true|false', 'Generator flag for border smoothing.'],
+          ['LEVHEIGHT / LEVCHAOS', 'Per-level height and chaos controls used with generated terrain.'],
+          ['MAPIMG / MINIMAPIMG', 'Optional map image paths; old files may leave them blank.']
+        ]
+      },
+      {
+        title: 'GMAP height blocks',
+        code: 'HEIGHTMAP\n-5,-5,-8,-5\n-5,0,0,-5\n-5,0,0,-5\n-5,-5,-5,-5\nHEIGHTMAPEND\n\nRANDOMSEEDS\n60124105,1571608946,1377847093\n...\nRANDOMSEEDSEND\n\nHEIGHTS levelname.nw 8 8\n-9.5625,-10.00061,-9.974726,...\n...\nHEIGHTSEND',
+        note: 'Old generated GMAPs can store a coarse map HEIGHTMAP, a RANDOMSEEDS grid matching WIDTH by HEIGHT, and one HEIGHTS block per level. The HEIGHTS line names the level and uses max indexes 8 8, so the block has 9 comma-separated rows with 9 float values each.'
+      },
+      {
         title: 'How editors merge it',
         points: [
           'Each grid cell is one 64x64 level.',
@@ -117,16 +133,34 @@ const fileFormatTabs = [
         rows: [
           ['Z3-V1.03', '12-bit tiles. Links and signs are known; baddy support is uncertain in the source document; no treasure or NPCs.'],
           ['Z3-V1.04', '12-bit tiles. Links, LttP baddies, and signs; no treasure or NPCs. Suite saves .zelda as this header.'],
-          ['GR-V1.00', '12-bit tiles. Links, LttP baddies, and signs. Treasure/NPC support is unclear; files include an extra # after the baddy stop code.'],
+          ['GR-V1.00', '12-bit tiles. Links, LttP baddies, signs, and NPCs. No treasure/chest section found in sampled files; files include an extra # after the baddy stop code.'],
           ['GR-V1.01', '12-bit tiles. Links, LttP baddies, signs, treasure, and NPCs. Some NPC entries may contain garbage data that the game still accepts.'],
           ['GR-V1.02', '13-bit tiles. Links, all baddies, signs, treasure, and NPCs. Adds golden soldier and two lizard baddy types.'],
-          ['GR-V1.03', '13-bit tiles. Final .graal revision seen in the document. Adds golden rupee, electric bombs, and horses. Suite saves .graal as this header.']
+          ['GR-V1.03', '13-bit tiles. Adds golden rupee, electric bombs, and horses. Suite saves single-layer .graal files as this header.'],
+          ['GR-V1.04', '13-bit tiles. Adds the optional HEIGHTS block for per-tile height data. No layer-count byte.'],
+          ['GR-V1.05', '13-bit tiles with layers. After the 8-byte header, one byte stores layerCount + 32, followed by one 4096-tile stream per layer. Object sections appear unchanged from GR-V1.03.']
         ]
       },
       {
+        title: 'Header support matrix',
+        matrix: {
+          columns: ['Header', 'Tile Bits', 'Layers', 'Links', 'Baddies', 'Signs', 'Treasure', 'NPCs', 'Notes'],
+          rows: [
+            ['Z3-V1.03', '12', '1', 'Yes', 'Unknown', 'Yes', 'No', 'No', 'Early Zelda binary level.'],
+            ['Z3-V1.04', '12', '1', 'Yes', 'LttP', 'Yes', 'No', 'No', 'Suite .zelda export target.'],
+            ['GR-V1.00', '12', '1', 'Yes', 'LttP', 'Yes', 'No', 'Yes', 'No chests found.'],
+            ['GR-V1.01', '12', '1', 'Yes', 'LttP', 'Yes', 'Yes', 'Yes', 'Early NPC/chest support.'],
+            ['GR-V1.02', '13', '1', 'Yes', 'All', 'Yes', 'Yes', 'Yes', 'Adds newer baddy types.'],
+            ['GR-V1.03', '13', '1', 'Yes', 'All', 'Yes', 'Yes', 'Yes', 'Adds golden rupee, electric bombs, horses.'],
+            ['GR-V1.04', '13', '1', 'Yes', 'All', 'Yes', 'Yes', 'Yes', 'Adds HEIGHTS.'],
+            ['GR-V1.05', '13', '1+', 'Yes', 'All', 'Yes', 'Yes', 'Yes', 'Adds layer-count byte and layered tile streams.']
+          ]
+        }
+      },
+      {
         title: 'Tile stream',
-        code: 'bits = header is GR-V1.02 or GR-V1.03 ? 13 : 12\ncontrolBit = bits == 13 ? 0x1000 : 0x800\n\nwhile board has fewer than 4096 tiles:\n  packet = read next 12 or 13 bits, little-endian from the byte stream\n\n  if packet has controlBit:\n    repeatCount = packet & 0xFF\n    doubleRepeat = packet has bit 0x100\n    continue\n\n  if repeatCount == 1:\n    append decodeTile(packet)\n  else if doubleRepeat:\n    read two tile packets A and B\n    append A, B, A, B... repeatCount times\n  else:\n    append decodeTile(packet) repeatCount times\n\ndecodeTile(index):\n  atlasX = floor(index / 512) * 16 + index % 16\n  atlasY = floor(index / 16) % 32',
-        note: 'The packed stream starts immediately after the 8-byte header. There is no tile count; stop only after producing 4096 tiles. Everything after the tile block is byte-aligned, so ignore leftover bits from the last packet.'
+        code: 'bits = header is GR-V1.02, GR-V1.03, GR-V1.04, or GR-V1.05 ? 13 : 12\ncontrolBit = bits == 13 ? 0x1000 : 0x800\nlayers = header is GR-V1.05 ? readByte() - 32 : 1\n\nfor each layer:\n  while board has fewer than 4096 tiles:\n    packet = read next 12 or 13 bits, little-endian from the byte stream\n\n    if packet has controlBit:\n      repeatCount = packet & 0xFF\n      doubleRepeat = packet has bit 0x100\n      continue\n\n    if repeatCount == 1:\n      append decodeTile(packet)\n    else if doubleRepeat:\n      read two tile packets A and B\n      append A, B, A, B... repeatCount times\n    else:\n      append decodeTile(packet) repeatCount times\n\ndecodeTile(index):\n  atlasX = floor(index / 512) * 16 + index % 16\n  atlasY = floor(index / 16) % 32',
+        note: 'For older headers, the packed stream starts immediately after the 8-byte header. GR-V1.05 inserts one layer-count byte first, then writes one full tile stream per layer. There is no tile count; stop each layer only after producing 4096 tiles. Everything after the tile block is byte-aligned, so ignore leftover bits from the last packet.'
       },
       {
         title: 'Binary object sections',
@@ -134,13 +168,19 @@ const fileFormatTabs = [
           ['Links', 'ASCII lines until #. Parameters are destination, width, height, x, y, newX, newY in the old document; Suite reads/writes destination, x, y, width, height, newX, newY for its own exports and tolerates destination names with spaces.'],
           ['Baddies', 'Three raw bytes for x, y, type, then one line of three verse strings. The document describes quote separators; Suite reads/writes backslash separators. Ends with FF FF FF and a newline.'],
           ['NPCs', '.graal only. Each line starts with x+32 and y+32 bytes, then optional image, #, and source code. NPC line breaks are stored as byte A7. Ends with #.'],
-          ['Chests', 'GR-V1.02/1.03. Each line stores x+32, y+32, itemIndex+32, signIndex+32, then newline. Ends with #; some versions may also include a null chest FF FF FF 00.'],
-          ['Signs', 'Run until EOF. Each line starts with x+32 and y+32, then encoded sign text. Sign text is not ASCII; it uses the old sign character table.']
+          ['Chests', 'GR-V1.02/1.03/1.04. Each line stores x+32, y+32, itemIndex+32, signIndex+32, then newline. Ends with #; some versions may also include a null chest FF FF FF 00.'],
+          ['Signs', 'Run until EOF or HEIGHTS. Each line starts with x+32 and y+32, then encoded sign text. Sign text is not ASCII; it uses the old sign character table.'],
+          ['HEIGHTS', 'GR-V1.04. Optional block after signs: HEIGHTS, then up to 9 rows of 9 numeric height values, ending with HEIGHTSEND.']
         ]
       },
       {
         title: 'Chest sign index',
         code: 'no sign = 31\n\n// Decode chest sign parameter from old binary files:\nsignIndex = (param + 224) % 256\n\n// Encode a sign index for a chest:\nparam = (signIndex + 32) % 256'
+      },
+      {
+        title: 'HEIGHTS block',
+        code: 'HEIGHTS\n-9.5625,-10.00061,-9.974726,-10.35263,-10.62071,-10.30612,-9.953248,-10.29718,-10\n...\n-7.375,-7.164513,-3.594417,-1.190231,-0.8196387,-0.3672638,-1.317492,-2.315771,-1.75\nHEIGHTSEND',
+        note: 'GR-V1.04 writes this optional 9x9 float grid after signs when height data exists. Values are comma-separated text rows. Readers should stop the sign section at HEIGHTS, parse rows until HEIGHTSEND, and use default flat heights when the block is missing.'
       },
       {
         title: 'Sign character table',
@@ -185,7 +225,7 @@ const fileFormatTabs = [
       },
       {
         title: 'Object order',
-        code: 'links, terminated by "#\\n"\nbaddies, terminated by FF FF FF + newline\nNPCs, terminated by "#\\n" (.graal only)\nchests, terminated by "#\\n" (.graal GR-V1.02/1.03)\nsigns, until end of file',
+        code: 'links, terminated by "#\\n"\nbaddies, terminated by FF FF FF + newline\nNPCs, terminated by "#\\n" (.graal only)\nchests, terminated by "#\\n" (.graal GR-V1.02/1.03/1.04)\nsigns, until EOF or HEIGHTS\nHEIGHTS block, terminated by HEIGHTSEND (GR-V1.04)',
         note: 'NPC code stores line breaks as byte 0xA7. Sign characters use the old sign sprite-sheet table instead of plain ASCII.'
       }
     ]
@@ -200,7 +240,7 @@ const fileFormatTabs = [
       {
         title: 'File skeleton',
         code: 'GANI0001\nSPRITE 0001 BODY 0 0 32 48 body\nDEFAULTHEAD head19.png\nDEFAULTBODY body.png\nLOOP\nANI\n 1 0 0,2 16 0\n 1 0 0,2 16 0\n 1 0 0,2 16 0\n 1 0 0,2 16 0\nWAIT 1\nANIEND\nSCRIPT\n// optional script\nSCRIPTEND',
-        note: 'The animation editor saves GANI0001. It can load the bad GANI0FP4 watermark header and resave it cleanly.'
+        note: 'The animation editor saves normal sprite animations as GANI0001.'
       },
       {
         title: 'Commands parsed by the Suite editor',
@@ -226,6 +266,31 @@ const fileFormatTabs = [
         title: 'Frame pieces',
         code: 'spriteIndex xOffset yOffset\nspriteIndex xOffset yOffset,spriteIndex xOffset yOffset\n\n// Four-direction frame:\n up pieces\n left pieces\n down pieces\n right pieces',
         note: 'The level editor renderer groups raw rows in sets of four for up, left, down, and right. Single-direction ganis use one row per frame.'
+      },
+      {
+        title: 'Movie mode',
+        rows: [
+          ['GANI0001', 'Normal sprite animation mode. Uses ANI ... ANIEND frame blocks.'],
+          ['GANI0002', 'Movie mode. Uses FRAMES and MOVIE ... MOVIEEND instead of ANI blocks.'],
+          ['FRAMES n', 'Movie-mode total frame count. GraalShop defaults this to 100 when switching into movie mode.'],
+          ['MOVIE', 'Starts the movie actor block.'],
+          ['ACTOR id direction', 'Starts one actor timeline. Direction is up, down, left, or right.'],
+          ['FRAME frameId names', 'Adds a movie frame for the current actor. Sprite names are comma-delimited with no spaces.'],
+          ['ACTOREND / MOVIEEND', 'Close the current actor and the whole movie block.']
+        ]
+      },
+      {
+        title: 'Movie mode skeleton',
+        code: 'GANI0002\nFRAMES 100\nSPRITE 0001 body.png 0000 0000 0032 0048\nSCRIPT\n// optional script\nSCRIPTEND\n\nMOVIE\n  ACTOR 0 down\n    FRAME 0 body.png\n    FRAME 5 body.png,head19.png\n  ACTOREND\nMOVIEEND',
+        note: 'GraalShop keeps sprite definitions, attachments, effects, defaults, and SCRIPT available in both modes. SINGLEDIRECTION is sprite-mode only; movie mode groups frames under actors instead of direction rows.'
+      },
+      {
+        title: 'Movie mode editor behavior',
+        points: [
+          'Switching to movie mode removes the sprite-mode frame list and sets FRAMES to 100 if the file was not already movie-mode.',
+          'Switching back to sprite mode removes actor timelines.',
+          'GraalShop labels the actor UI as Edit attributes and populates actor choices as Actor 0, Actor 1, and so on.'
+        ]
       }
     ]
   }
@@ -247,6 +312,14 @@ function FileFormatsGuide() {
     if (panelRef.current) panelRef.current.scrollTop = 0;
   }, [active]);
 
+  const matrixCellClass = value => {
+    const normalized = String(value).toLowerCase();
+    if (normalized === 'yes' || normalized === 'all' || normalized === 'lttp') return 'is-supported';
+    if (normalized === 'no') return 'is-missing';
+    if (normalized === 'unknown') return 'is-unknown';
+    return '';
+  };
+
   const renderSection = (section, index) => h('section', { className: 'formats-section', key: `${tab.id}-${index}` },
     h('h3', null, section.title),
     section.points && h('ul', { className: 'formats-points' }, section.points.map((point, i) => h('li', { key: i }, point))),
@@ -254,6 +327,14 @@ function FileFormatsGuide() {
       h('strong', null, row[0]),
       h('span', null, row[1])
     ))),
+    section.matrix && h('div', { className: 'formats-matrix-wrap' },
+      h('table', { className: 'formats-matrix' },
+        h('thead', null, h('tr', null, section.matrix.columns.map(column => h('th', { key: column }, column)))),
+        h('tbody', null, section.matrix.rows.map((row, rowIndex) => h('tr', { key: row[0] },
+          row.map((cell, cellIndex) => h(cellIndex === 0 ? 'th' : 'td', { key: `${rowIndex}-${cellIndex}`, className: matrixCellClass(cell) }, cell))
+        )))
+      )
+    ),
     section.code && h('pre', { className: 'formats-code' }, h('code', null, section.code)),
     section.note && h('p', { className: 'formats-note' }, section.note)
   );
