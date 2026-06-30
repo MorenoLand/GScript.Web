@@ -22,6 +22,7 @@ const queryClient = new QueryClient({
 })
 
 const legacyQueries = new Set(['beautify', 'byte', 'changes', 'docs', 'formats', 'graph', 'gsdoc', 'indexing', 'list', 'logo'])
+const legacyHostRoutes: Record<string, string> = { 'docs.gscript.dev': 'docs', 'byte.gscript.dev': 'byte', 'stats.gscript.dev': 'stats', 'gstats.moreno.land': 'stats', 'beautify.gscript.dev': 'beautify' }
 const legacyDocsHost = 'docs.gscript.dev'
 const legacyBotAdminRole = '1441076653852725420'
 const legacyBotEditorRole = '1440497287427129414'
@@ -29,7 +30,7 @@ const legacyBotEditorRole = '1440497287427129414'
 function getLegacySrc() {
   const search = window.location.search
   const hash = decodeURIComponent(window.location.hash.slice(1)).trim()
-  if (window.location.hostname === legacyDocsHost) return 'docs'
+  if (legacyHostRoutes[window.location.hostname]) return legacyHostRoutes[window.location.hostname]
   if (!search.startsWith('?')) return window.location.pathname === '/' && hash && hash.toLowerCase() !== 'browse' ? 'docs' : ''
   const key = search.slice(1).split('&')[0].split('=')[0].toLowerCase()
   return legacyQueries.has(key) ? key : ''

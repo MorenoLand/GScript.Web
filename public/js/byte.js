@@ -35,7 +35,7 @@ function initBytecodeConverter() {
   let isDecompileMode = false;
 
   function loadMonaco() {
-    require.config({ paths: { 'vs': 'https://cdnjs.cloudflare.com/ajax/libs/monaco-editor/0.45.0/min/vs' }});
+    require.config({ paths: { 'vs': '/js/monaco/vs' }});
     require(['vs/editor/editor.main'], function() {
     monaco.languages.register({ id: 'gscript' });
 
@@ -197,7 +197,7 @@ function initBytecodeConverter() {
 
   if (typeof require === 'undefined') {
     const script = document.createElement('script');
-    script.src = 'https://cdnjs.cloudflare.com/ajax/libs/monaco-editor/0.45.0/min/vs/loader.min.js';
+    script.src = '/js/monaco/vs/loader.js';
     script.onload = loadMonaco;
     document.head.appendChild(script);
   } else {

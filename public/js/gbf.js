@@ -578,56 +578,43 @@ let goByteInitPromise = null;
 let goByteReady = false;
 
 async function instantiateGoByte(moduleOrPath) {
-  const go = new globalThis.Go();
-  let instance;
-
-  if (moduleOrPath instanceof WebAssembly.Module) {
-    const loaded = await WebAssembly.instantiate(moduleOrPath, go.importObject);
-    instance = loaded.instance || loaded;
-  } else {
-    const wasmUrl = moduleOrPath || new URL('gbf.wasm', import.meta.url);
-    if (WebAssembly.instantiateStreaming) {
-      try {
-        const streamed = await WebAssembly.instantiateStreaming(fetch(wasmUrl), go.importObject);
-        instance = streamed.instance;
-      } catch (error) {
-        console.warn('GoByte streaming WASM load failed; falling back to ArrayBuffer.', error);
-      }
-    }
-
-    if (!instance) {
-      const response = await fetch(wasmUrl);
-      if (!response.ok) {
-        throw new Error(`Failed to fetch GoByte WASM (${response.status})`);
-      }
-      const bytes = await response.arrayBuffer();
-      const loaded = await WebAssembly.instantiate(bytes, go.importObject);
-      instance = loaded.instance || loaded;
-    }
-  }
-
-  go.run(instance);
-  if (typeof globalThis.GByteDecompileBytes !== 'function') {
-    throw new Error('GoByte decompiler exports were not registered.');
-  }
-  goByteReady = true;
+	const go = new globalThis.Go();
+	let instance;
+	if (moduleOrPath instanceof WebAssembly.Module) {
+		const loaded = await WebAssembly.instantiate(moduleOrPath, go.importObject);
+		instance = loaded.instance || loaded;
+	} else {
+		const wasmUrl = moduleOrPath || new URL('gbf.wasm', import.meta.url);
+		if (WebAssembly.instantiateStreaming) {
+			try {
+				const streamed = await WebAssembly.instantiateStreaming(fetch(wasmUrl), go.importObject);
+				instance = streamed.instance;
+			} catch (error) {
+				console.warn('GoByte streaming WASM load failed; falling back to ArrayBuffer.', error);
+			}
+		}
+		if (!instance) {
+			const response = await fetch(wasmUrl);
+			if (!response.ok) throw new Error(`Failed to fetch GoByte WASM (${response.status})`);
+			const bytes = await response.arrayBuffer();
+			const loaded = await WebAssembly.instantiate(bytes, go.importObject);
+			instance = loaded.instance || loaded;
+		}
+	}
+	go.run(instance);
+	if (typeof globalThis.GByteDecompileBytes !== 'function') throw new Error('GoByte decompiler exports were not registered.');
+	goByteReady = true;
 }
 
 export default function init(moduleOrPath) {
-  if (!goByteInitPromise) {
-    goByteInitPromise = instantiateGoByte(moduleOrPath);
-  }
-  return goByteInitPromise;
+	if (!goByteInitPromise) goByteInitPromise = instantiateGoByte(moduleOrPath);
+	return goByteInitPromise;
 }
 
 export function decompile_bytecode(bytecode) {
-  if (!goByteReady || typeof globalThis.GByteDecompileBytes !== 'function') {
-    throw new Error('GoByte WASM is not initialized.');
-  }
-  const bytes = bytecode instanceof Uint8Array ? bytecode : new Uint8Array(bytecode);
-  const result = globalThis.GByteDecompileBytes(bytes);
-  if (!result || !result.ok) {
-    throw new Error((result && result.error) || 'GoByte decompile failed.');
-  }
-  return result.output || '';
+	if (!goByteReady || typeof globalThis.GByteDecompileBytes !== 'function') throw new Error('GoByte WASM is not initialized.');
+	const bytes = bytecode instanceof Uint8Array ? bytecode : new Uint8Array(bytecode);
+	const result = globalThis.GByteDecompileBytes(bytes);
+	if (!result || !result.ok) throw new Error((result && result.error) || 'GoByte decompile failed.');
+	return result.output || '';
 }

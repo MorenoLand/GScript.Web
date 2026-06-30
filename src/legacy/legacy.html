@@ -54,12 +54,13 @@
   const legacyMode = legacyHost === 'docs.gscript.dev' || legacyParams.has('docs') ? 'docs' :
     legacyParams.has('indexing') ? 'indexing' :
     legacyParams.has('formats') ? 'formats' :
-    legacyParams.has('beautify') ? 'beautify' :
+    legacyParams.has('beautify') || legacyHost === 'beautify.gscript.dev' ? 'beautify' :
     legacyParams.has('byte') || legacyHost === 'byte.gscript.dev' ? 'byte' :
     legacyHost === 'stats.gscript.dev' || legacyHost === 'gstats.moreno.land' ? 'stats' : 'home';
   function loadLegacyScript(src, attrs = '') {
     const script = document.createElement('script');
     script.src = src;
+    script.async = false;
     attrs.replace(/(\w+)="([^"]*)"/g, (_, name, value) => script.setAttribute(name, value));
     document.head.appendChild(script);
   }
@@ -88,9 +89,8 @@
     loadLegacyScript('js/gs2.js', `onload="window.gs2Loaded = true;" onerror="console.error('Failed to load gs2.js')"`);
     const gbfScript = document.createElement('script');
     gbfScript.type = 'module';
-    gbfScript.textContent = `import init, { decompile_bytecode } from './js/gbf.js'; window.gbfWasmInit = init; window.gbfDecompileBytecode = decompile_bytecode;`;
+    gbfScript.textContent = `import init, { decompile_bytecode } from './js/gbf.js'; window.gbfWasmInit = init; window.gbfDecompileBytecode = decompile_bytecode; const script = document.createElement('script'); script.src = 'js/byte.js'; script.async = false; document.head.appendChild(script);`;
     document.head.appendChild(gbfScript);
-    loadLegacyScript('js/byte.js');
   }
 </script>
 
