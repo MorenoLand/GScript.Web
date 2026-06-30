@@ -7,10 +7,10 @@ export function NotFoundPage() {
       <p className="text-7xl font-semibold tracking-tight text-primary sm:text-8xl">404</p>
       <p className="mt-5 text-lg font-medium">Page not found</p>
       <p className="mt-2 max-w-sm text-sm text-muted-foreground">
-        That route doesn't exist in the showcase.
+        That route doesn't exist on #gscript.
       </p>
       <Button asChild className="mt-6">
-        <Link to="/">Return to gallery</Link>
+        <Link to="/">Return home</Link>
       </Button>
     </div>
   )
