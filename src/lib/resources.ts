@@ -30,7 +30,7 @@ export const RESOURCE_GROUPS: ResourceGroup[] = [
       { title: "Pluto's Level Editor", href: 'https://geditor.net/', description: 'Web level editor.' },
       { title: 'GS2 Emulator', href: 'https://gs2.gscript.dev/', description: 'GS2 runtime testbed.' },
       { title: 'Beautifier', href: '/?beautify', description: 'Format GS2 source.' },
-      { title: 'Pastebin', href: 'https://paste.gscript.dev', description: 'Share code snippets.' },
+      { title: 'Graphics Previewer', href: 'https://fungsiyan.github.io/previewer/', description: 'Preview graphics.' },
       { title: 'setshape2 / setimgpart', href: 'https://setshape.gscript.dev', description: 'Graphics helper.' },
     ],
   },
