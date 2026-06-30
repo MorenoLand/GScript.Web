@@ -65,3 +65,4 @@ Supported categories are defined in `src/lib/constants.ts`.
 - Radix UI primitives
 - Prism syntax highlighting
 - Moreno.API
+# gscript
