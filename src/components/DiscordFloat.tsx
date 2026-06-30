@@ -1,32 +1,34 @@
 import { type CSSProperties, useEffect, useMemo, useState } from 'react'
 
-type DiscordMember = { username: string; nickname?: string | null; avatar_url?: string | null }
+export type DiscordMember = { username: string; nickname?: string | null; global_name?: string | null; display_name?: string | null; name?: string | null; avatar_url?: string | null }
 type ParticleStyle = CSSProperties & Record<string, string>
 
-function getDiscordName(member: DiscordMember) {
-  return member.nickname?.trim() || member.username?.trim() || 'unknown'
+export function getDiscordName(member: DiscordMember) {
+  const username = member.username?.trim()
+  return member.nickname?.trim() || member.global_name?.trim() || member.display_name?.trim() || member.name?.trim() || username || 'unknown'
 }
 
 export function DiscordFloat() {
   const [members, setMembers] = useState<DiscordMember[]>([])
   const [hidden, setHidden] = useState(false)
   const lanes = useMemo(() => {
-    const visibleMembers = members.slice(0, 14)
+    const visibleMembers = members.slice(0, 18)
     const half = Math.ceil(visibleMembers.length / 2)
+    const leftMembers = visibleMembers.slice(0, half)
+    const rightMembers = visibleMembers.slice(half)
     return {
-      left: visibleMembers.slice(0, half).map((member, laneIndex) => ({ member, style: getParticleStyle(laneIndex, 'left') })),
-      right: visibleMembers.slice(half).map((member, laneIndex) => ({ member, style: getParticleStyle(laneIndex, 'right') })),
+      left: leftMembers.map((member, laneIndex) => ({ member, style: getParticleStyle(laneIndex, leftMembers.length, 'left') })),
+      right: rightMembers.map((member, laneIndex) => ({ member, style: getParticleStyle(laneIndex, rightMembers.length, 'right') })),
     }
   }, [members])
 
-  function getParticleStyle(laneIndex: number, side: 'left' | 'right') {
-    const top = 24 + (laneIndex * 9)
+  function getParticleStyle(laneIndex: number, laneCount: number, side: 'left' | 'right') {
     const drift = 8 + ((laneIndex * 31) % 64)
     const wobble = ((laneIndex * 13) % 24) - 12
     const x = side === 'left' ? drift + wobble : -(drift + wobble)
-    const duration = 8.5 + (laneIndex % 4) * 0.75
-    const delay = -((laneIndex * 1.15) % duration)
-    return { '--float-top': `${top}%`, '--float-x': `${x}px`, '--float-duration': `${duration}s`, '--float-delay': `${delay}s` } as ParticleStyle
+    const duration = 27
+    const delay = -(laneIndex * (duration / Math.max(laneCount, 1)))
+    return { '--float-top': '100%', '--float-x': `${x}px`, '--float-duration': `${duration}s`, '--float-delay': `${delay}s` } as ParticleStyle
   }
 
   useEffect(() => {
@@ -52,7 +54,7 @@ export function DiscordFloat() {
   return (
     <div
       className="discord-float-overlay"
-      style={{ position: 'absolute', inset: 0, zIndex: 2, pointerEvents: 'none', overflow: 'hidden' }}
+      style={{ position: 'absolute', top: '-7rem', right: 0, bottom: '7rem', left: 0, zIndex: 2, pointerEvents: 'none', overflow: 'hidden' }}
     >
       <DiscordLane side="left" members={lanes.left} />
       <DiscordLane side="right" members={lanes.right} />
@@ -69,7 +71,7 @@ function DiscordLane({ side, members }: { side: 'left' | 'right'; members: { mem
     <aside
       className={`discord-float discord-float-${side}`}
       aria-label={`#gscript Discord ${side}`}
-      style={{ position: 'absolute' as const, top: '6rem', bottom: '14rem', width: '18rem', pointerEvents: 'none', overflow: 'hidden', ...sideStyle }}
+      style={{ position: 'absolute' as const, top: '9.75rem', bottom: '11.25rem', width: '18rem', pointerEvents: 'none', overflow: 'visible', ...sideStyle }}
     >
       {members.map(({ member, style }, index) => {
         const displayName = getDiscordName(member)

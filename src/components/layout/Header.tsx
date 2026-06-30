@@ -62,7 +62,7 @@ export function Header() {
         <div className="relative flex h-14 items-center justify-between gap-4 px-4">
         <Link to="/" className="group flex shrink-0 items-center gap-2.5">
           <span className="flex h-8 w-8 items-center justify-center transition-transform group-hover:-translate-y-0.5">
-            <img src="/graalicon_big.png" alt="" className="h-8 w-8 object-contain [image-rendering:pixelated]" />
+            <img src="/gfx/graalserver_icon.png" alt="" className="h-8 w-8 object-contain [image-rendering:pixelated]" />
           </span>
           <span className="brand-discord text-[15px] font-semibold tracking-tight">
             #gscript
@@ -121,7 +121,7 @@ export function Header() {
                     ) : (
                       <UserIcon className="h-4 w-4 text-muted-foreground" />
                     )}
-                    <span className="hidden max-w-[120px] truncate sm:inline">
+                    <span className="hidden max-w-[120px] truncate text-[15px] sm:inline">
                       {user?.nickname || user?.username}
                     </span>
                     <ChevronDown className="h-3.5 w-3.5 opacity-50" />

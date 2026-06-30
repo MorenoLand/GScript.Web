@@ -10,13 +10,14 @@ import { useShowcaseItemList, PAGE_SIZE } from '@/hooks/useShowcaseItems'
 import { useAuth } from '@/hooks/useAuth'
 import { SHOWCASE_CATEGORIES } from '@/lib/constants'
 import { cn } from '@/lib/utils'
-import { DiscordFloat } from '@/components/DiscordFloat'
+import { DiscordFloat, getDiscordName, type DiscordMember } from '@/components/DiscordFloat'
 
-const heroWords = ['scripts', 'levels', 'ganis', 'graphics', 'tools', 'developers']
+const heroWords = ['the people', 'artists', 'gani artists', 'level artists', 'scripters', 'tool makers', 'builders', 'the community']
 
 export function GalleryPage() {
   const [searchParams, setSearchParams] = useSearchParams()
   const [heroWordIndex, setHeroWordIndex] = useState(0)
+  const [discordNames, setDiscordNames] = useState<string[]>([])
   const pageParam = Number(searchParams.get('page')) || 1
   const page = Math.max(1, pageParam)
   const categoryParam = searchParams.get('category') ?? 'all'
@@ -32,12 +33,26 @@ export function GalleryPage() {
   const movingSnippets = visibleSnippets.length > 0 ? Array.from({ length: 4 }, () => visibleSnippets).flat() : []
   const reversedSnippets = [...visibleSnippets].reverse()
   const movingRows = visibleSnippets.length >= 6 ? [movingSnippets, Array.from({ length: 4 }, () => reversedSnippets).flat()] : [movingSnippets]
-  const heroWord = heroWords[heroWordIndex]
+  const heroChoices = useMemo(() => discordNames.length ? [...heroWords, ...discordNames] : heroWords, [discordNames])
+  const heroWord = heroChoices[heroWordIndex % heroChoices.length]
 
   useEffect(() => {
     if (document.documentElement.classList.contains('reduce-motion')) return
-    const timer = window.setInterval(() => setHeroWordIndex((i) => (i + 1) % heroWords.length), 2200)
+    const timer = window.setInterval(() => setHeroWordIndex((i) => (i + 1) % heroChoices.length), 2200)
     return () => window.clearInterval(timer)
+  }, [heroChoices.length])
+
+  useEffect(() => {
+    const controller = new AbortController()
+    fetch('https://api.moreno.land/api/discord/users', { signal: controller.signal })
+      .then((r) => r.ok ? r.json() : Promise.reject())
+      .then((nextMembers) => {
+        const list: DiscordMember[] = Array.isArray(nextMembers) ? nextMembers : nextMembers?.members ?? []
+        const names = Array.from(new Set(list.map(getDiscordName).filter((name) => name && name !== 'unknown'))).slice(0, 12)
+        setDiscordNames(names)
+      })
+      .catch(() => setDiscordNames([]))
+    return () => controller.abort()
   }, [])
 
   useEffect(() => {
@@ -63,11 +78,11 @@ export function GalleryPage() {
 
   return (
     <div>
-      <section className="showcase-hero border-b border-border">
+      <section className="showcase-hero border-b border-white/8">
         <div className="container relative flex min-h-[calc(100vh-4rem)] flex-col items-center justify-center py-16 text-center sm:py-20">
           <DiscordFloat />
           <div className="showcase-mark" aria-hidden="true">
-            <img src="/zelda-character.png" alt="" />
+            <img src="/gfx/gs_los.png" alt="" />
           </div>
           <h1 className="mx-auto max-w-5xl text-balance text-5xl font-semibold tracking-tight sm:text-6xl lg:text-7xl" style={{ fontFamily: "'Tempus Sans ITC', 'Palatino Linotype', Georgia, serif" }}>
             Built for <span key={heroWord} className="showcase-hero-word" style={{ fontFamily: "'Tempus Sans ITC', 'Palatino Linotype', Georgia, serif" }}>{heroWord}</span>.
@@ -122,7 +137,7 @@ export function GalleryPage() {
       <section id="browse" className="container scroll-mt-20 py-10">
         <div className="mb-6 flex items-center gap-3">
           <h2 className="text-sm font-medium text-muted-foreground">Latest additions</h2>
-          <div className="h-px flex-1 bg-border" />
+          <div className="h-px flex-1 bg-white/10" />
           {data && (
             <span className="text-sm text-muted-foreground">{visibleSnippets.length}</span>
           )}
