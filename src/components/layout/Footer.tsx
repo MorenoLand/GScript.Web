@@ -10,9 +10,15 @@ export function Footer() {
           #gscript, powered by{' '}
           <span className="font-medium text-foreground">Moreno.API</span>
         </p>
-        <p className="text-center text-xs text-muted-foreground">
-          Graal Online is Copyright/trademarked to Toonslab and is in no way affiliated with this site.
-        </p>
+        <div className="text-center text-xs text-muted-foreground">
+          <p>Graal Online is Copyright/trademarked to Toonslab and is in no way affiliated with this site.</p>
+          <p>
+            Want to support #gscript?{' '}
+            <a href="https://ko-fi.com/denveous" target="_blank" rel="noreferrer" className="hover:text-primary">
+              Toss Denveous a kombucha on Ko-fi.
+            </a>
+          </p>
+        </div>
         <p className="flex items-center gap-3">
           <Link to="/resources" className="hover:text-primary">
             resources
