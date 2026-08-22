@@ -7,7 +7,7 @@ export function Footer() {
     <footer className="mt-20 border-t border-border">
       <div className="container flex flex-col items-center justify-between gap-2 py-7 text-sm text-muted-foreground sm:flex-row">
         <p>
-          #gscript, powered by{' '}
+          powered by{' '}
           <span className="font-medium text-foreground">Moreno.API</span>
         </p>
         <div className="text-center text-xs text-muted-foreground">

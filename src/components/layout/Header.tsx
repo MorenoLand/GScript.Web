@@ -151,7 +151,7 @@ export function Header() {
           ) : (
             <span className={cn('showcase-header-actions transition-all duration-300 ease-out', hideHeroActions && 'pointer-events-none translate-y-2 opacity-0')}>
               <Button asChild size="sm" variant="outline">
-                <Link to="/login">Sign in</Link>
+                <Link to="/login" state={{ from: `${location.pathname}${location.search}${location.hash}` }}>Sign in</Link>
               </Button>
             </span>
           )}

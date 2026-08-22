@@ -1,7 +1,7 @@
 @import url('https://fonts.googleapis.com/css2?family=Geist:wght@400;500;600;700&family=Geist+Mono:wght@400;500;600&display=swap');
 
-@font-face { font-family:'Tempus Sans ITC'; src:url('/fonts/tempus-sans-itc.ttf') format('truetype'); font-weight:400; font-display:swap; }
-@font-face { font-family:'Tempus Sans ITC'; src:url('/fonts/tempus-sans-itcbold.ttf') format('truetype'); font-weight:700; font-display:swap; }
+@font-face { font-family:'Tempus Sans ITC'; src:url('/fonts/tempus-sans-itc.woff') format('woff'),local('Tempus Sans ITC'),local('TempusSansITC'); font-weight:400; font-display:swap; }
+@font-face { font-family:'Tempus Sans ITC'; src:url('/fonts/tempus-sans-itcbold.woff') format('woff'),local('Tempus Sans ITC'),local('TempusSansITC'); font-weight:700; font-display:swap; }
 
 @tailwind base;
 @tailwind components;

@@ -1,8 +1,11 @@
 async function loadFont() {
-  const fontUrl = '../fonts/tempus-sans-itc.ttf';
-  const font = new FontFace('Tempus Sans ITC', `url(${fontUrl})`);
-  await font.load();
-  document.fonts.add(font);
+  const font = new FontFace('Tempus Sans ITC', 'url("../fonts/tempus-sans-itc.woff") format("woff"), local("Tempus Sans ITC"), local("TempusSansITC")');
+  try {
+    await font.load();
+    document.fonts.add(font);
+  } catch {
+    return null;
+  }
 }
 
 async function loadLogo(containerId) {

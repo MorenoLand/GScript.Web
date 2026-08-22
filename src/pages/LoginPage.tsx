@@ -4,8 +4,9 @@ import { Button } from '@/components/ui/button'
 import { getDiscordLoginUrl } from '@/lib/api'
 
 export function LoginPage() {
-  const location = useLocation() as { state?: { from?: string } }
-  const from = location.state?.from
+  const location = useLocation() as { pathname: string; search: string; hash: string; state?: { from?: string } }
+  const currentPath = `${location.pathname}${location.search}${location.hash}`
+  const from = location.state?.from || currentPath
   const returnUrl = new URL(from && from !== '/login' ? from : '/', window.location.origin).toString()
 
   return (

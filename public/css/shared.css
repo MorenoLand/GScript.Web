@@ -3,7 +3,7 @@ h1, h2, p, a, td, th, span { user-select: none; text-align: center; text-decorat
 p { margin: 2px 0; }
 a { color: #40ff40; text-shadow: 1px 1px 1px rgba(0, 0, 255, 1); }
 span { text-shadow: 1px 1px 1px rgba(0, 0, 255, 1); }
-@font-face { font-family: 'Tempus Sans ITC'; src: url('../fonts/tempus-sans-itc.ttf') format('truetype'); font-weight: normal; }
+@font-face { font-family: 'Tempus Sans ITC'; src: url('../fonts/tempus-sans-itc.woff') format('woff'), local('Tempus Sans ITC'), local('TempusSansITC'); font-weight: normal; }
 .contain-bg2{position:fixed;top:-8px;left:-8px;width:calc(100% + 16px);height:calc(100% + 16px);background:url('../gfx/gs_bg2.png') no-repeat center center;background-size:cover;z-index:-10;border:8px solid rgba(0,0,0,0.5);box-shadow:inset 0 0 50px rgba(0,0,0,0.8);box-sizing:border-box;backdrop-filter:blur(8px);-webkit-backdrop-filter:blur(8px);}
 .contain-bg2::before{content:"";position:fixed;top:0;left:0;width:100vw;height:100vh;background:rgba(0,0,0,0.56);backdrop-filter:blur(8px);-webkit-backdrop-filter:blur(8px);z-index:2;}
 .container{width:100%;min-height:100vh;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:40px 20px;position:relative;z-index:1;}

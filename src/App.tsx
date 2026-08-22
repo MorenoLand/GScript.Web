@@ -29,9 +29,10 @@ const legacyBotEditorRole = '1440497287427129414'
 
 function getLegacySrc() {
   const search = window.location.search
+  const hasOAuthToken = new URLSearchParams(window.location.hash.replace(/^#/, '')).has('token')
   const hash = decodeURIComponent(window.location.hash.slice(1)).trim()
   if (legacyHostRoutes[window.location.hostname]) return legacyHostRoutes[window.location.hostname]
-  if (!search.startsWith('?')) return window.location.pathname === '/' && hash && hash.toLowerCase() !== 'browse' ? 'docs' : ''
+  if (!search.startsWith('?')) return window.location.pathname === '/' && hash && !hasOAuthToken && hash.toLowerCase() !== 'browse' ? 'docs' : ''
   const key = search.slice(1).split('&')[0].split('=')[0].toLowerCase()
   return legacyQueries.has(key) ? key : ''
 }
