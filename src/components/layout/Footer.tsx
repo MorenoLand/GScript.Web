@@ -20,10 +20,10 @@ export function Footer() {
           </p>
         </div>
         <p className="flex items-center gap-3">
-          <Link to="/resources" className="hover:text-primary">
+          <Link to="/resources" className="footer-resources-disabled hover:text-primary">
             resources
           </Link>
-          <span className="text-border">|</span>
+          <span className="footer-resources-disabled text-border">|</span>
           <Link to="/" onClick={scrollHomeTop} className="hover:text-primary">
             home
           </Link>

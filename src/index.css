@@ -214,6 +214,11 @@
     background: transparent;
   }
 
+  .showcase-top-links-disabled,.showcase-hero-actions-disabled,.discord-float-overlay{display:none!important;}
+  .showcase-header-actions{opacity:1!important;pointer-events:auto!important;transform:none!important;}
+  .footer-resources-disabled{display:none!important;}
+  .theme-mode-option-disabled{display:none!important;}
+
   .showcase-hero::before {
     content: "";
     position: absolute;

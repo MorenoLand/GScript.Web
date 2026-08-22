@@ -60,16 +60,16 @@ export function Header() {
     <header className="sticky top-0 z-40 pt-4">
       <div className="container">
         <div className="relative flex h-14 items-center justify-between gap-4 px-4">
-        <Link to="/" className="group flex shrink-0 items-center gap-2.5">
+        <a href="https://gscript.dev" className="group flex shrink-0 items-center gap-2.5">
           <span className="flex h-8 w-8 items-center justify-center transition-transform group-hover:-translate-y-0.5">
             <img src="/gfx/graalserver_icon.png" alt="" className="h-8 w-8 object-contain [image-rendering:pixelated]" />
           </span>
           <span className="brand-discord text-[15px] font-semibold tracking-tight">
             #gscript
           </span>
-        </Link>
+        </a>
 
-        <div className="hidden min-w-0 flex-1 items-center justify-center gap-1 lg:flex">
+        <div aria-hidden="true" className="hidden min-w-0 flex-1 items-center justify-center gap-1 lg:flex showcase-top-links-disabled">
             <Link to="/resources" className={cn("rounded-md px-3 py-1.5 text-[15px] font-medium text-muted-foreground transition-colors hover:bg-accent hover:text-foreground", location.pathname === '/resources' && !location.hash && "bg-accent text-foreground")}>Resources</Link>
             <Link to="/resources#tools" className={cn("rounded-md px-3 py-1.5 text-[15px] font-medium text-muted-foreground transition-colors hover:bg-accent hover:text-foreground", location.pathname === '/resources' && location.hash === '#tools' && "bg-accent text-foreground")}>Tools</Link>
             <a href="https://suite.gscript.dev" className="rounded-md px-3 py-1.5 text-[15px] font-medium text-muted-foreground transition-colors hover:bg-accent hover:text-foreground">Suite</a>
@@ -82,7 +82,7 @@ export function Header() {
             </a>
         </div>
         <nav className="ml-auto flex shrink-0 items-center gap-2">
-          <span className={cn('flex items-center gap-2 transition-all duration-300 ease-out', hideHeroActions && 'pointer-events-none translate-y-2 opacity-0')}>
+          <span className={cn('showcase-header-actions flex items-center gap-2 transition-all duration-300 ease-out', hideHeroActions && 'pointer-events-none translate-y-2 opacity-0')}>
             <NavLink
               to="/"
               end
@@ -149,7 +149,7 @@ export function Header() {
               </DropdownMenu>
             </>
           ) : (
-            <span className={cn('transition-all duration-300 ease-out', hideHeroActions && 'pointer-events-none translate-y-2 opacity-0')}>
+            <span className={cn('showcase-header-actions transition-all duration-300 ease-out', hideHeroActions && 'pointer-events-none translate-y-2 opacity-0')}>
               <Button asChild size="sm" variant="outline">
                 <Link to="/login">Sign in</Link>
               </Button>
@@ -170,7 +170,7 @@ export function Header() {
             <DropdownMenuContent align="end" sideOffset={0} onPointerEnter={() => openMenu('settings')} onPointerLeave={() => closeMenu('settings')}>
               <DropdownMenuLabel>Settings</DropdownMenuLabel>
               <DropdownMenuSeparator />
-              <DropdownMenuItem onClick={() => setDark((v) => !v)}>
+              <DropdownMenuItem className="theme-mode-option-disabled" onClick={() => setDark((v) => !v)}>
                 <Lightbulb className={cn('h-4 w-4', dark && 'fill-primary text-primary')} />
                 {dark ? 'Light mode' : 'Dark mode'}
               </DropdownMenuItem>

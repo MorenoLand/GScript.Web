@@ -90,7 +90,7 @@ export function GalleryPage() {
           <p className="mx-auto mt-5 max-w-2xl text-balance text-base leading-relaxed text-muted-foreground sm:text-xl">
             Scripts, levels, ganis, graphics, tools, and odd little discoveries from the #gscript crew.
           </p>
-          <div className="mt-8 flex flex-wrap items-center justify-center gap-3">
+          <div className="showcase-hero-actions-disabled mt-8 flex flex-wrap items-center justify-center gap-3">
             <Button asChild size="lg" className="gap-2">
               <a href="#browse">
                 Browse
